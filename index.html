@@ -3,92 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal del Trabajador</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Generador de Permisos</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .formulario { max-width: 400px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin: auto;}
+        .grupo { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold;}
+        input { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #0056b3; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #004494; }
+    </style>
 </head>
-<body class="bg-blue-50 flex items-center justify-center min-h-screen">
+<body>
 
-    <div id="login-section" class="bg-white p-8 rounded-lg shadow-md w-96">
-        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Acceso Trabajador</h2>
-        <input type="text" id="usuario" placeholder="Usuario" class="w-full mb-4 p-2 border rounded">
-        <input type="password" id="password" placeholder="Contraseña" class="w-full mb-6 p-2 border rounded">
-        <button onclick="login()" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Entrar</button>
-    </div>
-
-    <div id="form-section" class="bg-white p-8 rounded-lg shadow-md w-full max-w-md hidden">
-        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Registro Físico</h2>
-        
-        <label class="block text-gray-700 mb-2">Altura (en metros, ej: 1.75)</label>
-        <input type="number" step="0.01" id="altura" class="w-full mb-4 p-2 border rounded">
-        
-        <label class="block text-gray-700 mb-2">Peso (en kg, ej: 70.5)</label>
-        <input type="number" step="0.1" id="peso" class="w-full mb-6 p-2 border rounded">
-
-        <label class="block text-gray-700 mb-2">Firma aquí:</label>
-        <canvas id="pizarra" width="350" height="150" class="border rounded bg-gray-50 mb-4 cursor-crosshair"></canvas>
-        <button onclick="limpiarFirma()" class="text-sm text-red-500 mb-6">Limpiar Firma</button>
-
-        <button onclick="guardarFormulario()" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Firmar y Enviar</button>
+    <div class="formulario">
+        <h2>Permiso Trabajo en Alturas</h2>
+        <form id="formPermiso">
+            <div class="grupo">
+                <label for="fecha">Fecha:</label>
+                <input type="date" id="fecha" required>
+            </div>
+            <div class="grupo">
+                <label for="hora">Hora de Inicio:</label>
+                <input type="time" id="hora" required>
+            </div>
+            <div class="grupo">
+                <label for="area">Área / Ubicación:</label>
+                <input type="text" id="area" placeholder="Ej: Torre A" required>
+            </div>
+            <div class="grupo">
+                <label for="altura">Altura Máxima (Metros):</label>
+                <input type="number" id="altura" placeholder="Ej: 15" required>
+            </div>
+            
+            <button type="submit" id="btnGenerar">Generar Documento Excel</button>
+        </form>
     </div>
 
     <script>
-        let usuarioActualId = null;
+        document.getElementById('formPermiso').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Evita que la página se recargue
 
-        // --- Lógica del Canvas (Firma) ---
-        const canvas = document.getElementById('pizarra');
-        const ctx = canvas.getContext('2d');
-        let dibujando = false;
+            const btnGenerar = document.getElementById('btnGenerar');
+            btnGenerar.innerText = "Generando...";
+            btnGenerar.disabled = true;
 
-        canvas.addEventListener('mousedown', (e) => { dibujando = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
-        canvas.addEventListener('mousemove', (e) => { if(dibujando) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } });
-        canvas.addEventListener('mouseup', () => { dibujando = false; });
-        canvas.addEventListener('mouseout', () => { dibujando = false; });
+            // 1. Armar el JSON con los datos del formulario
+            const datos = {
+                Fecha: document.getElementById('fecha').value,
+                HoraInicio: document.getElementById('hora').value,
+                Area: document.getElementById('area').value,
+                AlturaMaxima: document.getElementById('altura').value
+            };
 
-        function limpiarFirma() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
+            try {
+                // 2. Llamar a la API en .NET
+                // ¡IMPORTANTE! Cambia el puerto si tu .NET corre en otro lado
+                const response = await fetch('http://localhost:5000/api/documentos/generar-permiso', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datos)
+                });
 
-        // --- Conexión con Backend ---
-        async function login() {
-            const usuario = document.getElementById('usuario').value;
-            const password = document.getElementById('password').value;
+                if (!response.ok) throw new Error("Error al generar el archivo");
 
-            const response = await fetch('http://localhost:3000/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usuario, password })
-            });
-            const data = await response.json();
+                // 3. Recibir el archivo (Blob) y forzar la descarga en el navegador
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Permiso_Alturas_Completado.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url); // Limpiar memoria
 
-            if (data.success) {
-                usuarioActualId = data.usuarioId;
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('form-section').classList.remove('hidden');
-            } else {
-                alert('Credenciales incorrectas (Usa: trabajador1 / 1234)');
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                btnGenerar.innerText = "Generar Documento Excel";
+                btnGenerar.disabled = false;
             }
-        }
-
-        async function guardarFormulario() {
-            const altura = document.getElementById('altura').value;
-            const peso = document.getElementById('peso').value;
-            // Convertimos la firma a una imagen en Base64 para guardarla en la base de datos
-            const firma = canvas.toDataURL('image/png'); 
-
-            if (!altura || !peso) return alert('Llena todos los campos');
-
-            const response = await fetch('http://localhost:3000/guardar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usuarioId: usuarioActualId, altura, peso, firma })
-            });
-            const data = await response.json();
-
-            if (data.success) {
-                alert(`¡Guardado! Tu IMC calculado por Python es: ${data.imc}`);
-                location.reload(); // Recargar para limpiar
-            }
-        }
+        });
     </script>
 </body>
 </html>
