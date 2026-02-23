@@ -34,10 +34,10 @@ namespace ExportadorDocumentos.Controllers
                 var worksheet = workbook.Worksheet(1); 
 
                 // 3. Reemplazar las etiquetas con los datos del JSON
-                ReemplazarTexto(worksheet, "{{Fecha}}", request.Fecha);
-                ReemplazarTexto(worksheet, "{{HoraInicio}}", request.HoraInicio);
-                ReemplazarTexto(worksheet, "{{Area}}", request.Area);
-                ReemplazarTexto(worksheet, "{{AlturaMaxima}}", request.AlturaMaxima);
+                ReemplazarTexto(worksheet, "{{FECHA_PERMISO}}", request.Fecha);
+                ReemplazarTexto(worksheet, "{{HORA_INICIO}}", request.HoraInicio);
+                ReemplazarTexto(worksheet, "{{AREA_TRABAJO}}", request.Area);
+                ReemplazarTexto(worksheet, "{{ALTURA_MAXIMA}}", request.AlturaMaxima);
 
                 // 4. Guardar el archivo modificado en un Stream (memoria)
                 using var stream = new MemoryStream();
