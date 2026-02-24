@@ -26,7 +26,8 @@ public class ExcelService
             throw new FileNotFoundException("Plantilla no encontrada");
 
         using var workbook = new XLWorkbook(templatePath);
-        var ws = workbook.Worksheet(1);
+        // La hoja con los marcadores se llama "Permiso de trabajo" (hoja 3)
+        var ws = workbook.Worksheet("Permiso de trabajo");
 
         foreach (var cell in ws.CellsUsed())
         {
