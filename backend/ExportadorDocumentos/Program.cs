@@ -15,6 +15,17 @@ builder.Services.AddControllers();
 // 🔥 REGISTRAR EL SERVICIO
 builder.Services.AddScoped<ExcelService>();
 
+// 🌐 CORS - Permite peticiones desde el frontend
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // 🔹 Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -40,6 +51,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+
+// 🌐 Habilitar CORS
+app.UseCors();
 
 app.UseAuthorization();
 
