@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ExportadorDocumentos")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b3895f64250b90a4f26ea57925ddcdbc4d1d310a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+26e496c1c1c6341ad2c9d5dfc016d8675de72929")]
 [assembly: System.Reflection.AssemblyProductAttribute("ExportadorDocumentos")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ExportadorDocumentos")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

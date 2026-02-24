@@ -6,14 +6,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <!-- 📦 Paquetes NuGet -->
+  <!-- paquetes -->
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.24" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
-  <!-- 📁 Copiar Templates al bin -->
+  <!-- copiar templates -->
   <ItemGroup>
     <Content Include="Templates\**\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

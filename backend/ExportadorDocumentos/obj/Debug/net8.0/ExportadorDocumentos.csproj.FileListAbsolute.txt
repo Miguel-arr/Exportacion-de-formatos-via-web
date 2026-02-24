@@ -40,10 +40,18 @@ C:\Users\rodri\Desktop\proyecto_empresa\ExportadorDocumentos\obj\Debug\net8.0\re
 C:\Users\rodri\Desktop\proyecto_empresa\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.pdb
 C:\Users\rodri\Desktop\proyecto_empresa\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.genruntimeconfig.cache
 C:\Users\rodri\Desktop\proyecto_empresa\ExportadorDocumentos\obj\Debug\net8.0\ref\ExportadorDocumentos.dll
+C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.csproj.AssemblyReference.cache
+C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.AssemblyInfoInputs.cache
+C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.AssemblyInfo.cs
+C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.csproj.CoreCompileInputs.cache
+C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.sourcelink.json
 C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\bin\Debug\net8.0\appsettings.json
 C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\bin\Debug\net8.0\ExportadorDocumentos.exe
-C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\bin\Debug\net8.0\Templates\TRABAJO ALTURAS GDINGENIERIA SAS.xlsx
+C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\bin\Debug\net8.0\Templates\ALTURAS.xlsx
 C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\bin\Debug\net8.0\ExportadorDocumentos.deps.json
 C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\bin\Debug\net8.0\ExportadorDocumentos.runtimeconfig.json
 C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\bin\Debug\net8.0\ExportadorDocumentos.dll
@@ -61,14 +69,6 @@ C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\bin\Debug\n
 C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
 C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\bin\Debug\net8.0\System.IO.Packaging.dll
-C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.csproj.AssemblyReference.cache
-C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.AssemblyInfoInputs.cache
-C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.AssemblyInfo.cs
-C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.csproj.CoreCompileInputs.cache
-C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.MvcApplicationPartsAssemblyInfo.cs
-C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\ExportadorDocumentos.sourcelink.json
 C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\rodri\Desktop\proyecto_empresa\backend\ExportadorDocumentos\obj\Debug\net8.0\staticwebassets\msbuild.ExportadorDocumentos.Microsoft.AspNetCore.StaticWebAssets.props

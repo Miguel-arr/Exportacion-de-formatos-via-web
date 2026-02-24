@@ -1,4 +1,8 @@
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-// 🔹 Swagger (para poder probar la API desde el navegador)
+// 🔥 REGISTRAR EL SERVICIO
+builder.Services.AddScoped<ExcelService>();
+
+// 🔹 Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

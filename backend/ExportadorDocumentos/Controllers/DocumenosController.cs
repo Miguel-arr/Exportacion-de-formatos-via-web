@@ -6,25 +6,28 @@ public class DocumentosController : ControllerBase
 {
     private readonly ExcelService _excelService;
 
-    public DocumentosController() => _excelService = new ExcelService();
+    // 🔥 Inyección correcta
+    public DocumentosController(ExcelService excelService)
+    {
+        _excelService = excelService;
+    }
 
     [HttpPost("generar-permiso")]
     public IActionResult GenerarPermiso([FromBody] PermisoTrabajoRequest req)
     {
         try
         {
-            var bytes = _excelService.GenerarExcelConFirma(req);
-            return File(bytes,
+            var archivo = _excelService.GenerarExcelConFirma(req);
+
+            return File(
+                archivo,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"Permiso_{req.Fecha}.xlsx");
-        }
-        catch (FileNotFoundException)
-        {
-            return NotFound("Plantilla no encontrada en Templates/");
+                "PermisoGenerado.xlsx"
+            );
         }
         catch (Exception ex)
         {
-            return BadRequest($"Error al generar el archivo: {ex.Message}");
+            return NotFound(ex.Message);
         }
     }
 }

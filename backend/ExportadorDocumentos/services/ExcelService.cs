@@ -1,14 +1,26 @@
 using ClosedXML.Excel;
+using Microsoft.AspNetCore.Hosting;
 
 public class ExcelService
 {
+    private readonly IWebHostEnvironment _env;
+
+    public ExcelService(IWebHostEnvironment env)
+    {
+        _env = env;
+    }
+
     public byte[] GenerarExcelConFirma(PermisoTrabajoRequest req)
     {
         string templatePath = Path.Combine(
-            Directory.GetCurrentDirectory(),
+            _env.ContentRootPath,
             "Templates",
-            "TRABAJO ALTURAS GDINGENIERIA SAS.xslx" // Ajusta nombre real
+            "ALTURAS.xlsx" // ESTE ES TU ARCHIVO REAL
         );
+
+        Console.WriteLine("Buscando en:");
+        Console.WriteLine(templatePath);
+        Console.WriteLine("Existe?: " + File.Exists(templatePath));
 
         if (!File.Exists(templatePath))
             throw new FileNotFoundException("Plantilla no encontrada");
@@ -16,7 +28,6 @@ public class ExcelService
         using var workbook = new XLWorkbook(templatePath);
         var ws = workbook.Worksheet(1);
 
-        // 🔹 Reemplazar texto correctamente
         foreach (var cell in ws.CellsUsed())
         {
             if (cell.GetString().Contains("{{FECHA_PERMISO}}"))
@@ -30,24 +41,6 @@ public class ExcelService
 
             if (cell.GetString().Contains("{{ALTURA_MAXIMA}}"))
                 cell.Value = cell.GetString().Replace("{{ALTURA_MAXIMA}}", req.AlturaMaxima);
-        }
-
-        // 🔹 Insertar firma
-        if (!string.IsNullOrEmpty(req.ImgFirmaResponsableTarea))
-        {
-            string pathImg = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "assets",
-                "firmas",
-                req.ImgFirmaResponsableTarea
-            );
-
-            if (File.Exists(pathImg))
-            {
-                ws.AddPicture(pathImg)
-                  .MoveTo(ws.Cell("B15"))
-                  .Scale(0.8);
-            }
         }
 
         using var ms = new MemoryStream();
