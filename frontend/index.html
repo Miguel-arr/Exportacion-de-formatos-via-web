@@ -1,92 +1,360 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Permisos</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
-        .formulario { max-width: 400px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin: auto;}
-        .grupo { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold;}
-        input { width: 100%; padding: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background-color: #0056b3; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #004494; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Permiso de Trabajo en Alturas</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary:    #1a56db;
+      --primary-dk: #1240a8;
+      --bg:         #f1f5f9;
+      --card:       #ffffff;
+      --text:       #1e293b;
+      --muted:      #64748b;
+      --border:     #cbd5e1;
+      --danger:     #ef4444;
+      --success:    #22c55e;
+      --radius:     10px;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 24px rgba(0,0,0,.10);
+      width: 100%;
+      max-width: 480px;
+      padding: 40px 36px;
+      animation: fadeIn .35s ease;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+    .card-header { text-align: center; margin-bottom: 28px; }
+    .card-header .logo {
+      width: 56px; height: 56px;
+      background: var(--primary);
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+    .card-header .logo svg { width:30px; height:30px; fill:#fff; }
+    .card-header h1 { font-size: 1.35rem; font-weight: 700; color: var(--text); }
+    .card-header p  { font-size: .875rem; color: var(--muted); margin-top: 4px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block;
+      font-size: .8125rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: .9375rem;
+      color: var(--text);
+      background: #fff;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26,86,219,.12);
+    }
+    .input-icon { position:relative; }
+    .input-icon input { padding-left: 40px; }
+    .input-icon .icon {
+      position:absolute; left:12px; top:50%; transform:translateY(-50%);
+      color: var(--muted); pointer-events:none;
+    }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dk); }
+    .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
+    .alert {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: .875rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .alert.error   { background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; display:block; }
+    .alert.success { background:#dcfce7; color:#15803d; border:1px solid #86efac; display:block; }
+    .divider { border:none; border-top:1px solid var(--border); margin:20px 0; }
+    .badge {
+      display:inline-block;
+      background:#eff6ff;
+      color:var(--primary);
+      font-size:.75rem;
+      font-weight:700;
+      padding:2px 8px;
+      border-radius:99px;
+      margin-left:6px;
+    }
+    .spinner {
+      display:inline-block;
+      width:16px; height:16px;
+      border:2px solid rgba(255,255,255,.4);
+      border-top-color:#fff;
+      border-radius:50%;
+      animation:spin .6s linear infinite;
+      vertical-align:middle;
+      margin-right:6px;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .hidden { display: none !important; }
+    .user-bar {
+      display:flex; align-items:center; justify-content:space-between;
+      background:#eff6ff; border-radius:8px; padding:10px 14px;
+      margin-bottom:20px; font-size:.875rem;
+    }
+    .user-bar strong { color:var(--primary); }
+    .user-bar button {
+      background:none; border:none; color:var(--danger);
+      font-size:.8125rem; font-weight:600; cursor:pointer;
+    }
+    .user-bar button:hover { text-decoration:underline; }
+    .file-label {
+      display:flex; align-items:center; gap:10px;
+      border:1.5px dashed var(--border);
+      border-radius:8px; padding:10px 14px;
+      cursor:pointer; transition:border-color .2s;
+      font-size:.9rem; color:var(--muted);
+    }
+    .file-label:hover { border-color:var(--primary); color:var(--primary); }
+    .file-label input[type="file"] { display:none; }
+    #firma-name { font-size:.8rem; color:var(--muted); margin-top:4px; }
+  </style>
 </head>
 <body>
+<div class="card" id="app">
 
-    <div class="formulario">
-        <h2>Permiso Trabajo en Alturas</h2>
-        <form id="formPermiso">
-            <div class="grupo">
-                <label for="fecha">Fecha:</label>
-                <input type="date" id="fecha" required>
-            </div>
-            <div class="grupo">
-                <label for="hora">Hora de Inicio:</label>
-                <input type="time" id="hora" required>
-            </div>
-            <div class="grupo">
-                <label for="area">Área / Ubicación:</label>
-                <input type="text" id="area" placeholder="Ej: Torre A" required>
-            </div>
-            <div class="grupo">
-                <label for="altura">Altura Máxima (Metros):</label>
-                <input type="number" id="altura" placeholder="Ej: 15" required>
-            </div>
-            
-            <button type="submit" id="btnGenerar">Generar Documento Excel</button>
-        </form>
+  <!-- LOGIN -->
+  <div id="screen-login">
+    <div class="card-header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2a9 9 0 0 1 9 9v1H3v-1a9 9 0 0 1 9-9zm-9 11h18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1zm2 4h14v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-1z"/>
+        </svg>
+      </div>
+      <h1>Permisos de Trabajo</h1>
+      <p>Inicia sesion para continuar</p>
     </div>
+    <div id="login-alert" class="alert"></div>
+    <form id="form-login" novalidate>
+      <div class="form-group">
+        <label for="login-user">Usuario</label>
+        <div class="input-icon">
+          <span class="icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </span>
+          <input type="text" id="login-user" placeholder="Ingresa tu usuario" autocomplete="username" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="login-pass">Contrasena</label>
+        <div class="input-icon">
+          <span class="icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+          <input type="password" id="login-pass" placeholder="Ingresa tu contrasena" autocomplete="current-password" required />
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" id="btn-login">Iniciar sesion</button>
+    </form>
+    <hr class="divider" />
+    <p style="text-align:center;font-size:.8rem;color:var(--muted);">
+      Credenciales de prueba: <strong>admin</strong> / <strong>1234</strong>
+    </p>
+  </div>
 
-    <script>
-        document.getElementById('formPermiso').addEventListener('submit', async function(e) {
-            e.preventDefault(); // Evita que la página se recargue
+  <!-- FORMULARIO -->
+  <div id="screen-form" class="hidden">
+    <div class="user-bar">
+      <span>Bienvenido, <strong id="user-name-display"></strong></span>
+      <button id="btn-logout">Cerrar sesion</button>
+    </div>
+    <div class="card-header" style="margin-bottom:20px;">
+      <h1>Permiso de Trabajo en Alturas <span class="badge">Excel</span></h1>
+      <p>Completa los campos y descarga el documento generado</p>
+    </div>
+    <div id="form-alert" class="alert"></div>
+    <form id="form-permiso" novalidate>
+      <div class="row">
+        <div class="form-group">
+          <label for="f-fecha">Fecha</label>
+          <input type="date" id="f-fecha" required />
+        </div>
+        <div class="form-group">
+          <label for="f-hora">Hora de inicio</label>
+          <input type="time" id="f-hora" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="f-area">Area / Ubicacion</label>
+        <input type="text" id="f-area" placeholder="Ej: Torre A, Piso 3" required />
+      </div>
+      <div class="form-group">
+        <label for="f-altura">Altura maxima (metros)</label>
+        <input type="number" id="f-altura" placeholder="Ej: 15" min="0" step="0.1" required />
+      </div>
+      <div class="form-group">
+        <label>Firma del responsable</label>
+        <label class="file-label" for="f-firma">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Seleccionar imagen de firma
+          <input type="file" id="f-firma" accept="image/*" />
+        </label>
+        <div id="firma-name">Sin archivo seleccionado (se usara firma1.png por defecto)</div>
+      </div>
+      <button type="submit" class="btn btn-primary" id="btn-generar">
+        Generar y descargar Excel
+      </button>
+    </form>
+  </div>
 
-            const btnGenerar = document.getElementById('btnGenerar');
-            btnGenerar.innerText = "Generando...";
-            btnGenerar.disabled = true;
+</div>
+<script>
+  var USERS = [
+    { username: 'admin',    password: '1234',   displayName: 'Administrador' },
+    { username: 'operador', password: 'op2024', displayName: 'Operador'      }
+  ];
+  var API_BASE = 'http://localhost:5205';
+  function gid(id) { return document.getElementById(id); }
 
-            // 1. Armar el JSON con los datos del formulario
-            const datos = {
-                Fecha: document.getElementById('fecha').value,
-                HoraInicio: document.getElementById('hora').value,
-                Area: document.getElementById('area').value,
-                AlturaMaxima: document.getElementById('altura').value
-            };
+  function showAlert(id, msg, type) {
+    var el = gid(id);
+    el.textContent = msg;
+    el.className = 'alert ' + type;
+  }
+  function hideAlert(id) {
+    var el = gid(id);
+    el.className = 'alert';
+    el.textContent = '';
+  }
+  function showScreen(name) {
+    gid('screen-login').classList.toggle('hidden', name !== 'login');
+    gid('screen-form').classList.toggle('hidden', name !== 'form');
+  }
 
-            try {
-                // 2. Llamar a la API en .NET
-                // ¡IMPORTANTE! Cambia el puerto si tu .NET corre en otro lado
-                const response = await fetch('http://localhost:5205/api/documentos/generar-permiso', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(datos)
-                });
+  var currentUser = null;
 
-                if (!response.ok) throw new Error("Error al generar el archivo");
+  function tryRestoreSession() {
+    var saved = sessionStorage.getItem('currentUser');
+    if (saved) {
+      currentUser = JSON.parse(saved);
+      gid('user-name-display').textContent = currentUser.displayName;
+      showScreen('form');
+    } else {
+      showScreen('login');
+    }
+  }
 
-                // 3. Recibir el archivo (Blob) y forzar la descarga en el navegador
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'Permiso_Alturas_Completado.xlsx';
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url); // Limpiar memoria
+  gid('form-login').addEventListener('submit', function(e) {
+    e.preventDefault();
+    hideAlert('login-alert');
+    var username = gid('login-user').value.trim();
+    var password = gid('login-pass').value;
+    var user = USERS.find(function(u) { return u.username === username && u.password === password; });
+    if (!user) {
+      showAlert('login-alert', 'Usuario o contrasena incorrectos.', 'error');
+      return;
+    }
+    currentUser = user;
+    sessionStorage.setItem('currentUser', JSON.stringify(user));
+    gid('user-name-display').textContent = user.displayName;
+    showScreen('form');
+    var today = new Date().toISOString().split('T')[0];
+    gid('f-fecha').value = today;
+  });
 
-            } catch (error) {
-                alert(error.message);
-            } finally {
-                btnGenerar.innerText = "Generar Documento Excel";
-                btnGenerar.disabled = false;
-            }
-        });
-    </script>
+  gid('btn-logout').addEventListener('click', function() {
+    currentUser = null;
+    sessionStorage.removeItem('currentUser');
+    gid('form-login').reset();
+    gid('form-permiso').reset();
+    gid('firma-name').textContent = 'Sin archivo seleccionado (se usara firma1.png por defecto)';
+    hideAlert('form-alert');
+    showScreen('login');
+  });
+
+  gid('f-firma').addEventListener('change', function() {
+    var file = this.files[0];
+    gid('firma-name').textContent = file ? file.name : 'Sin archivo seleccionado (se usara firma1.png por defecto)';
+  });
+
+  gid('form-permiso').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    hideAlert('form-alert');
+    var btn = gid('btn-generar');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Generando...';
+    var firmaFile = gid('f-firma').files[0];
+    var firmaName = firmaFile ? firmaFile.name : 'firma1.png';
+    var payload = {
+      fecha:                    gid('f-fecha').value,
+      horaInicio:               gid('f-hora').value,
+      area:                     gid('f-area').value,
+      alturaMaxima:             gid('f-altura').value,
+      imgFirmaResponsableTarea: firmaName
+    };
+    try {
+      var response = await fetch(API_BASE + '/api/documentos/generar-permiso', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload)
+      });
+      if (!response.ok) {
+        var errText = await response.text();
+        throw new Error(errText || 'Error ' + response.status);
+      }
+      var blob = await response.blob();
+      var url  = window.URL.createObjectURL(blob);
+      var a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'Permiso_Alturas_Completado.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      showAlert('form-alert', 'Documento generado y descargado correctamente.', 'success');
+    } catch (err) {
+      showAlert('form-alert',
+        'No se pudo conectar con el servidor. Verifica que el backend este corriendo en ' + API_BASE + '. Detalle: ' + err.message,
+        'error'
+      );
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Generar y descargar Excel';
+    }
+  });
+
+  tryRestoreSession();
+</script>
 </body>
 </html>
