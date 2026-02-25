@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Permiso de Trabajo en Alturas</title>
+  <title>Permisos de Trabajo</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -60,7 +60,7 @@
       text-transform: uppercase;
       letter-spacing: .04em;
     }
-    .form-group input, .form-group select {
+    .form-group input, .form-group select, .form-group textarea {
       width: 100%;
       padding: 10px 14px;
       border: 1.5px solid var(--border);
@@ -70,11 +70,13 @@
       background: #fff;
       transition: border-color .2s, box-shadow .2s;
       outline: none;
+      font-family: inherit;
     }
-    .form-group input:focus, .form-group select:focus {
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(26,86,219,.12);
     }
+    .form-group textarea { resize: vertical; min-height: 80px; }
     .input-icon { position:relative; }
     .input-icon input { padding-left: 40px; }
     .input-icon .icon {
@@ -96,6 +98,8 @@
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: var(--primary-dk); }
     .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
+    .btn-secondary { background: #e2e8f0; color: var(--text); }
+    .btn-secondary:hover { background: #cbd5e1; }
     .alert {
       padding: 10px 14px;
       border-radius: 8px;
@@ -149,6 +153,33 @@
     .file-label:hover { border-color:var(--primary); color:var(--primary); }
     .file-label input[type="file"] { display:none; }
     #firma-name { font-size:.8rem; color:var(--muted); margin-top:4px; }
+    .selector-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .selector-btn {
+      padding: 14px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      transition: all .2s;
+      text-align: center;
+      font-weight: 600;
+      font-size: .9rem;
+      color: var(--muted);
+    }
+    .selector-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .selector-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
   </style>
 </head>
 <body>
@@ -193,18 +224,44 @@
     </p>
   </div>
 
-  <!-- FORMULARIO -->
-  <div id="screen-form" class="hidden">
+  <!-- SELECTOR DE FORMULARIOS -->
+  <div id="screen-selector" class="hidden">
     <div class="user-bar">
-      <span>Bienvenido, <strong id="user-name-display"></strong></span>
-      <button id="btn-logout">Cerrar sesion</button>
+      <span>Bienvenido, <strong id="user-name-display-selector"></strong></span>
+      <button id="btn-logout-selector">Cerrar sesion</button>
+    </div>
+    <div class="card-header" style="margin-bottom:20px;">
+      <h1>Selecciona un Formulario</h1>
+      <p>Elige el tipo de documento que deseas generar</p>
+    </div>
+    <div class="selector-container">
+      <button type="button" class="selector-btn active" id="btn-select-alturas">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 8px; display: block;">
+          <path d="M12 2v20M2 12h20"/>
+        </svg>
+        Permiso de Alturas
+      </button>
+      <button type="button" class="selector-btn" id="btn-select-asistencia">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 8px; display: block;">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>
+        </svg>
+        Asistencia
+      </button>
+    </div>
+  </div>
+
+  <!-- FORMULARIO DE ALTURAS -->
+  <div id="screen-form-alturas" class="hidden">
+    <div class="user-bar">
+      <span>Bienvenido, <strong id="user-name-display-alturas"></strong></span>
+      <button id="btn-back-alturas">Volver</button>
     </div>
     <div class="card-header" style="margin-bottom:20px;">
       <h1>Permiso de Trabajo en Alturas <span class="badge">Excel</span></h1>
       <p>Completa los campos y descarga el documento generado</p>
     </div>
-    <div id="form-alert" class="alert"></div>
-    <form id="form-permiso" novalidate>
+    <div id="form-alert-alturas" class="alert"></div>
+    <form id="form-permiso-alturas" novalidate>
       <div class="row">
         <div class="form-group">
           <label for="f-fecha">Fecha</label>
@@ -232,8 +289,54 @@
         </label>
         <div id="firma-name">Sin archivo seleccionado (se usara firma1.png por defecto)</div>
       </div>
-      <button type="submit" class="btn btn-primary" id="btn-generar">
+      <button type="submit" class="btn btn-primary" id="btn-generar-alturas">
         Generar y descargar Excel
+      </button>
+    </form>
+  </div>
+
+  <!-- FORMULARIO DE ASISTENCIA -->
+  <div id="screen-form-asistencia" class="hidden">
+    <div class="user-bar">
+      <span>Bienvenido, <strong id="user-name-display-asistencia"></strong></span>
+      <button id="btn-back-asistencia">Volver</button>
+    </div>
+    <div class="card-header" style="margin-bottom:20px;">
+      <h1>Registro de Asistencia <span class="badge">Nuevo</span></h1>
+      <p>Completa los campos de asistencia</p>
+    </div>
+    <div id="form-alert-asistencia" class="alert"></div>
+    <form id="form-asistencia" novalidate>
+      <div class="row">
+        <div class="form-group">
+          <label for="a-fecha">Fecha</label>
+          <input type="date" id="a-fecha" required />
+        </div>
+        <div class="form-group">
+          <label for="a-hora-entrada">Hora de entrada</label>
+          <input type="time" id="a-hora-entrada" required />
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label for="a-hora-salida">Hora de salida</label>
+          <input type="time" id="a-hora-salida" required />
+        </div>
+        <div class="form-group">
+          <label for="a-trabajador">Nombre del trabajador</label>
+          <input type="text" id="a-trabajador" placeholder="Ej: Juan Pérez" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="a-departamento">Departamento</label>
+        <input type="text" id="a-departamento" placeholder="Ej: Mantenimiento" required />
+      </div>
+      <div class="form-group">
+        <label for="a-observaciones">Observaciones</label>
+        <textarea id="a-observaciones" placeholder="Notas adicionales (opcional)"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" id="btn-generar-asistencia">
+        Guardar asistencia
       </button>
     </form>
   </div>
@@ -245,6 +348,9 @@
     { username: 'operador', password: 'op2024', displayName: 'Operador'      }
   ];
   var API_BASE = 'http://localhost:5205';
+  var currentUser = null;
+  var currentForm = null; // 'alturas' o 'asistencia'
+
   function gid(id) { return document.getElementById(id); }
 
   function showAlert(id, msg, type) {
@@ -259,22 +365,25 @@
   }
   function showScreen(name) {
     gid('screen-login').classList.toggle('hidden', name !== 'login');
-    gid('screen-form').classList.toggle('hidden', name !== 'form');
+    gid('screen-selector').classList.toggle('hidden', name !== 'selector');
+    gid('screen-form-alturas').classList.toggle('hidden', name !== 'alturas');
+    gid('screen-form-asistencia').classList.toggle('hidden', name !== 'asistencia');
   }
-
-  var currentUser = null;
 
   function tryRestoreSession() {
     var saved = sessionStorage.getItem('currentUser');
     if (saved) {
       currentUser = JSON.parse(saved);
-      gid('user-name-display').textContent = currentUser.displayName;
-      showScreen('form');
+      gid('user-name-display-selector').textContent = currentUser.displayName;
+      gid('user-name-display-alturas').textContent = currentUser.displayName;
+      gid('user-name-display-asistencia').textContent = currentUser.displayName;
+      showScreen('selector');
     } else {
       showScreen('login');
     }
   }
 
+  // LOGIN
   gid('form-login').addEventListener('submit', function(e) {
     e.preventDefault();
     hideAlert('login-alert');
@@ -287,31 +396,67 @@
     }
     currentUser = user;
     sessionStorage.setItem('currentUser', JSON.stringify(user));
-    gid('user-name-display').textContent = user.displayName;
-    showScreen('form');
+    gid('user-name-display-selector').textContent = user.displayName;
+    gid('user-name-display-alturas').textContent = user.displayName;
+    gid('user-name-display-asistencia').textContent = user.displayName;
+    showScreen('selector');
+  });
+
+  // SELECTOR - Botones para elegir formulario
+  gid('btn-select-alturas').addEventListener('click', function() {
+    gid('btn-select-alturas').classList.add('active');
+    gid('btn-select-asistencia').classList.remove('active');
+    currentForm = 'alturas';
     var today = new Date().toISOString().split('T')[0];
     gid('f-fecha').value = today;
+    showScreen('alturas');
   });
 
-  gid('btn-logout').addEventListener('click', function() {
+  gid('btn-select-asistencia').addEventListener('click', function() {
+    gid('btn-select-asistencia').classList.add('active');
+    gid('btn-select-alturas').classList.remove('active');
+    currentForm = 'asistencia';
+    var today = new Date().toISOString().split('T')[0];
+    gid('a-fecha').value = today;
+    showScreen('asistencia');
+  });
+
+  // BOTONES VOLVER
+  gid('btn-back-alturas').addEventListener('click', function() {
+    showScreen('selector');
+  });
+
+  gid('btn-back-asistencia').addEventListener('click', function() {
+    showScreen('selector');
+  });
+
+  // LOGOUT
+  function logout() {
     currentUser = null;
+    currentForm = null;
     sessionStorage.removeItem('currentUser');
     gid('form-login').reset();
-    gid('form-permiso').reset();
+    gid('form-permiso-alturas').reset();
+    gid('form-asistencia').reset();
     gid('firma-name').textContent = 'Sin archivo seleccionado (se usara firma1.png por defecto)';
-    hideAlert('form-alert');
+    hideAlert('form-alert-alturas');
+    hideAlert('form-alert-asistencia');
     showScreen('login');
-  });
+  }
 
+  gid('btn-logout-selector').addEventListener('click', logout);
+
+  // FIRMA (para formulario de alturas)
   gid('f-firma').addEventListener('change', function() {
     var file = this.files[0];
     gid('firma-name').textContent = file ? file.name : 'Sin archivo seleccionado (se usara firma1.png por defecto)';
   });
 
-  gid('form-permiso').addEventListener('submit', async function(e) {
+  // FORMULARIO ALTURAS
+  gid('form-permiso-alturas').addEventListener('submit', async function(e) {
     e.preventDefault();
-    hideAlert('form-alert');
-    var btn = gid('btn-generar');
+    hideAlert('form-alert-alturas');
+    var btn = gid('btn-generar-alturas');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>Generando...';
     var firmaFile = gid('f-firma').files[0];
@@ -342,15 +487,59 @@
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      showAlert('form-alert', 'Documento generado y descargado correctamente.', 'success');
+      showAlert('form-alert-alturas', 'Documento generado y descargado correctamente.', 'success');
     } catch (err) {
-      showAlert('form-alert',
+      showAlert('form-alert-alturas',
         'No se pudo conectar con el servidor. Verifica que el backend este corriendo en ' + API_BASE + '. Detalle: ' + err.message,
         'error'
       );
     } finally {
       btn.disabled = false;
       btn.innerHTML = 'Generar y descargar Excel';
+    }
+  });
+
+  // FORMULARIO ASISTENCIA
+  gid('form-asistencia').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    hideAlert('form-alert-asistencia');
+    var btn = gid('btn-generar-asistencia');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Guardando...';
+    var payload = {
+      fecha:          gid('a-fecha').value,
+      horaEntrada:    gid('a-hora-entrada').value,
+      horaSalida:     gid('a-hora-salida').value,
+      trabajador:     gid('a-trabajador').value,
+      departamento:   gid('a-departamento').value,
+      observaciones:  gid('a-observaciones').value
+    };
+    try {
+      // Por ahora solo mostramos un mensaje de éxito
+      // Cuando tengas el endpoint en el backend, descomenta esto:
+      /*
+      var response = await fetch(API_BASE + '/api/documentos/guardar-asistencia', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload)
+      });
+      if (!response.ok) {
+        var errText = await response.text();
+        throw new Error(errText || 'Error ' + response.status);
+      }
+      */
+      showAlert('form-alert-asistencia', 'Asistencia registrada correctamente.', 'success');
+      gid('form-asistencia').reset();
+      var today = new Date().toISOString().split('T')[0];
+      gid('a-fecha').value = today;
+    } catch (err) {
+      showAlert('form-alert-asistencia',
+        'Error al guardar la asistencia. Detalle: ' + err.message,
+        'error'
+      );
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Guardar asistencia';
     }
   });
 
