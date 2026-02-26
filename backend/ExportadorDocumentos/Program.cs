@@ -1,21 +1,20 @@
 using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // =============================
 // Servicios
 // =============================
-
 builder.Services.AddControllers();
 
-// 🔥 REGISTRAR EL SERVICIO
+// Registrar servicios de negocio
 builder.Services.AddScoped<ExcelService>();
+builder.Services.AddScoped<JwtService>();
 
-// 🌐 CORS - Permite peticiones desde el frontend
+// CORS - Permite peticiones desde el frontend
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -26,7 +25,35 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 🔹 Swagger
+// JWT - Autenticacion y Autorizacion
+var jwtSecretKey = builder.Configuration["Jwt:SecretKey"]!;
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero
+        };
+
+        // Leer el token desde la cookie HttpOnly
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Cookies.TryGetValue("jwt_token", out var token))
+                    context.Token = token;
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// Swagger con soporte para JWT
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -34,7 +61,32 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "Exportador Documentos API",
         Version = "v1",
-        Description = "API para generar permisos de trabajo en Excel"
+        Description = "API para generar documentos Excel con motor agnostico de plantillas"
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Ingresa el token JWT"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
     });
 });
 
@@ -43,7 +95,6 @@ var app = builder.Build();
 // =============================
 // Middleware
 // =============================
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -52,11 +103,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseRouting();
 
-// 🌐 Habilitar CORS
+// Habilitar CORS
 app.UseCors();
 
+// Autenticacion y Autorizacion
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.Run();
