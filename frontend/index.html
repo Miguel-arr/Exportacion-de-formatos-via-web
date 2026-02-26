@@ -169,7 +169,7 @@
       border: 1.5px solid var(--border);
       border-radius: 8px;
       overflow: hidden;
-      background: #fafafa;
+      background: #fff;
     }
     .firma-container canvas {
       display: block;
@@ -198,11 +198,7 @@
       font-weight: 600;
     }
     .firma-toolbar button:hover { border-color: var(--primary); color: var(--primary); }
-    .firma-hint {
-      font-size: .75rem;
-      color: var(--muted);
-      margin-top: 4px;
-    }
+    .firma-hint { font-size: .75rem; color: var(--muted); margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -378,6 +374,26 @@
   var currentUser = null;
 
   // ============================================================
+  // Manejo del token JWT
+  // Se guarda en localStorage para que funcione tanto desde file://
+  // como desde un servidor HTTP. El token se envia como header
+  // Authorization: Bearer <token> en cada peticion autenticada.
+  // ============================================================
+  function getToken()        { return localStorage.getItem('jwt_token'); }
+  function setToken(t)       { localStorage.setItem('jwt_token', t); }
+  function clearToken()      { localStorage.removeItem('jwt_token'); localStorage.removeItem('jwt_user'); }
+  function getStoredUser()   { try { return JSON.parse(localStorage.getItem('jwt_user')); } catch(e) { return null; } }
+  function setStoredUser(u)  { localStorage.setItem('jwt_user', JSON.stringify(u)); }
+
+  // Construye los headers para peticiones autenticadas
+  function authHeaders(extra) {
+    var h = Object.assign({ 'Content-Type': 'application/json' }, extra || {});
+    var token = getToken();
+    if (token) h['Authorization'] = 'Bearer ' + token;
+    return h;
+  }
+
+  // ============================================================
   // Utilidades DOM
   // ============================================================
   function gid(id) { return document.getElementById(id); }
@@ -405,8 +421,8 @@
   }
 
   // ============================================================
-  // Canvas de Firma Digital (equivalente a react-signature-canvas)
-  // Genera un string Base64 PNG que el backend inyecta con AddPicture()
+  // Canvas de Firma Digital
+  // Genera Base64 PNG que el backend inyecta con AddPicture()
   // ============================================================
   var firmaCanvas = gid('firma-canvas');
   var firmaCtx    = firmaCanvas.getContext('2d');
@@ -423,10 +439,7 @@
     var scaleX = firmaCanvas.width  / rect.width;
     var scaleY = firmaCanvas.height / rect.height;
     var src    = e.touches ? e.touches[0] : e;
-    return {
-      x: (src.clientX - rect.left) * scaleX,
-      y: (src.clientY - rect.top)  * scaleY
-    };
+    return { x: (src.clientX - rect.left) * scaleX, y: (src.clientY - rect.top) * scaleY };
   }
 
   firmaCanvas.addEventListener('mousedown', function(e) {
@@ -466,21 +479,17 @@
 
   // ============================================================
   // Autenticacion JWT
-  // El token se almacena en cookie HttpOnly/Secure en el servidor.
-  // El frontend solo envia credentials: 'include' en cada peticion.
+  // El token se guarda en localStorage y se envia como header
+  // Authorization: Bearer <token> en cada peticion.
   // ============================================================
-  async function tryRestoreSession() {
-    try {
-      var res = await fetch(API_BASE + '/api/auth/me', { credentials: 'include' });
-      if (res.ok) {
-        var data = await res.json();
-        currentUser = data;
-        setUserDisplay(data.displayName);
-        showScreen('selector');
-      } else {
-        showScreen('login');
-      }
-    } catch (e) {
+  function tryRestoreSession() {
+    var token = getToken();
+    var user  = getStoredUser();
+    if (token && user) {
+      currentUser = user;
+      setUserDisplay(user.displayName);
+      showScreen('selector');
+    } else {
       showScreen('login');
     }
   }
@@ -494,34 +503,42 @@
 
     try {
       var res = await fetch(API_BASE + '/api/auth/login', {
-        method:      'POST',
-        headers:     { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: gid('login-user').value.trim(),
           password: gid('login-pass').value
         })
       });
+
       if (!res.ok) {
-        var err = await res.json().catch(function() { return { message: 'Error de autenticacion' }; });
+        var err = await res.json().catch(function() { return { message: 'Credenciales incorrectas.' }; });
         throw new Error(err.message || 'Error de autenticacion');
       }
+
       var data = await res.json();
+
+      // Guardar token y datos del usuario en localStorage
+      setToken(data.token);
       currentUser = { username: data.username, displayName: data.displayName };
+      setStoredUser(currentUser);
+
       setUserDisplay(data.displayName);
       showScreen('selector');
     } catch (err) {
-      showAlert('login-alert', err.message, 'error');
+      var msg = err.message;
+      if (msg.includes('fetch') || msg.includes('NetworkError') || msg.includes('Failed')) {
+        msg = 'No se pudo conectar al servidor en ' + API_BASE + '. Verifica que el backend este corriendo con "dotnet run".';
+      }
+      showAlert('login-alert', msg, 'error');
     } finally {
       btn.disabled = false;
       btn.innerHTML = 'Iniciar sesion';
     }
   });
 
-  async function logout() {
-    try {
-      await fetch(API_BASE + '/api/auth/logout', { method: 'POST', credentials: 'include' });
-    } catch (e) { /* ignorar */ }
+  function logout() {
+    clearToken();
     currentUser = null;
     gid('form-login').reset();
     gid('form-permiso-alturas').reset();
@@ -554,7 +571,7 @@
   gid('btn-back-asistencia').addEventListener('click', function() { showScreen('selector'); });
 
   // ============================================================
-  // Formulario Alturas - Envio al backend con firma Base64
+  // Formulario Alturas
   // ============================================================
   gid('form-permiso-alturas').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -573,10 +590,9 @@
 
     try {
       var response = await fetch(API_BASE + '/api/documentos/generar-permiso', {
-        method:      'POST',
-        headers:     { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body:        JSON.stringify(payload)
+        method:  'POST',
+        headers: authHeaders(),
+        body:    JSON.stringify(payload)
       });
 
       if (response.status === 401) {
@@ -598,7 +614,7 @@
       showAlert('form-alert-alturas', 'Documento generado y descargado correctamente.', 'success');
     } catch (err) {
       showAlert('form-alert-alturas',
-        'No se pudo conectar con el servidor (' + API_BASE + '). Detalle: ' + err.message, 'error');
+        'Error al conectar con el servidor (' + API_BASE + '). Detalle: ' + err.message, 'error');
     } finally {
       btn.disabled = false;
       btn.innerHTML = 'Generar y descargar Excel';
@@ -627,7 +643,7 @@
   });
 
   // ============================================================
-  // Inicio: intentar restaurar sesion via cookie JWT
+  // Inicio: restaurar sesion desde localStorage
   // ============================================================
   tryRestoreSession();
 </script>

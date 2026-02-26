@@ -14,14 +14,16 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<ExcelService>();
 builder.Services.AddScoped<JwtService>();
 
-// CORS - Permite peticiones desde el frontend
+// CORS - Configuracion permisiva para desarrollo local
+// Necesario cuando el frontend se abre como file:// o desde cualquier origen
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.SetIsOriginAllowed(_ => true)  // Acepta cualquier origen, incluyendo file://
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();             // Necesario para cookies y Authorization header
     });
 });
 
@@ -39,13 +41,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.Zero
         };
 
-        // Leer el token desde la cookie HttpOnly
+        // Leer el token desde la cookie HttpOnly O desde el header Authorization
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
             {
-                if (context.Request.Cookies.TryGetValue("jwt_token", out var token))
-                    context.Token = token;
+                // Primero intentar desde cookie
+                if (context.Request.Cookies.TryGetValue("jwt_token", out var cookieToken))
+                {
+                    context.Token = cookieToken;
+                    return Task.CompletedTask;
+                }
+                // Si no hay cookie, leer desde header Authorization: Bearer <token>
+                var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                if (authHeader != null && authHeader.StartsWith("Bearer "))
+                {
+                    context.Token = authHeader.Substring("Bearer ".Length).Trim();
+                }
                 return Task.CompletedTask;
             }
         };
@@ -103,7 +115,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseRouting();
 
-// Habilitar CORS
+// Habilitar CORS (debe ir antes de Authentication/Authorization)
 app.UseCors();
 
 // Autenticacion y Autorizacion

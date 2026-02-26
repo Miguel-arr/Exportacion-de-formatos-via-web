@@ -6,7 +6,7 @@ public class AuthController : ControllerBase
 {
     private readonly JwtService _jwtService;
 
-    // Usuarios en memoria (en producción se reemplazaría con base de datos)
+    // Usuarios en memoria (en produccion se reemplazaria con base de datos)
     private static readonly List<(string Username, string Password, string DisplayName)> _users = new()
     {
         ("admin",    "1234",   "Administrador"),
@@ -19,7 +19,8 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Autentica al usuario y devuelve un JWT almacenado en cookie HttpOnly.
+    /// Autentica al usuario. Devuelve el JWT en el body Y en una cookie HttpOnly.
+    /// El frontend puede usar cualquiera de los dos metodos segun su contexto.
     /// </summary>
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequest req)
@@ -28,39 +29,42 @@ public class AuthController : ControllerBase
             u.Username == req.Username && u.Password == req.Password);
 
         if (user == default)
-            return Unauthorized(new { message = "Usuario o contraseña incorrectos." });
+            return Unauthorized(new { message = "Usuario o contrasena incorrectos." });
 
         var token = _jwtService.GenerarToken(user.Username, user.DisplayName);
 
-        // Almacenar el token en una cookie HttpOnly y Secure
+        // Guardar en cookie HttpOnly (funciona cuando el frontend esta en un servidor HTTP)
         Response.Cookies.Append("jwt_token", token, new CookieOptions
         {
             HttpOnly = true,
-            Secure   = false, // Cambiar a true en producción con HTTPS
-            SameSite = SameSiteMode.Strict,
+            Secure   = false, // true en produccion con HTTPS
+            SameSite = SameSiteMode.None, // None para permitir cross-origin
             Expires  = DateTimeOffset.UtcNow.AddHours(8)
         });
 
+        // Devolver el token tambien en el body para que el frontend
+        // pueda guardarlo en localStorage cuando se abre como file://
         return Ok(new
         {
-            message     = "Autenticación exitosa.",
+            message     = "Autenticacion exitosa.",
+            token       = token,
             username    = user.Username,
             displayName = user.DisplayName
         });
     }
 
     /// <summary>
-    /// Cierra la sesión eliminando la cookie JWT.
+    /// Cierra la sesion eliminando la cookie JWT.
     /// </summary>
     [HttpPost("logout")]
     public IActionResult Logout()
     {
         Response.Cookies.Delete("jwt_token");
-        return Ok(new { message = "Sesión cerrada correctamente." });
+        return Ok(new { message = "Sesion cerrada correctamente." });
     }
 
     /// <summary>
-    /// Verifica si el token JWT en la cookie es válido.
+    /// Verifica si el token JWT es valido (via cookie o Authorization header).
     /// </summary>
     [HttpGet("me")]
     [Microsoft.AspNetCore.Authorization.Authorize]
