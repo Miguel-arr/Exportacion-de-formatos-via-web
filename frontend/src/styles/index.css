@@ -1,0 +1,357 @@
+/* ─── Variables de diseño ─────────────────────────────────────────────────── */
+:root {
+  --primary:    #2563eb;
+  --primary-dk: #1d4ed8;
+  --danger:     #dc2626;
+  --border:     #e2e8f0;
+  --muted:      #64748b;
+  --bg:         #f1f5f9;
+  --card-bg:    #ffffff;
+  --text:       #1e293b;
+}
+
+/* ─── Reset y base ────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+/* ─── Tarjeta principal ───────────────────────────────────────────────────── */
+.card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 540px;
+}
+
+/* ─── Cabecera de tarjeta ─────────────────────────────────────────────────── */
+.card-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.card-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.card-header p {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* ─── Logo ────────────────────────────────────────────────────────────────── */
+.logo {
+  width: 56px;
+  height: 56px;
+  background: var(--primary);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.logo svg {
+  width: 28px;
+  height: 28px;
+  fill: #fff;
+}
+
+/* ─── Formularios ─────────────────────────────────────────────────────────── */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  color: var(--text);
+  background: #fff;
+  transition: border-color 0.15s;
+  outline: none;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* ─── Input con ícono ─────────────────────────────────────────────────────── */
+.input-icon {
+  position: relative;
+}
+
+.input-icon input {
+  padding-left: 40px;
+}
+
+.input-icon .icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+/* ─── Grid de dos columnas ────────────────────────────────────────────────── */
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* ─── Botones ─────────────────────────────────────────────────────────────── */
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-dk);
+}
+
+.btn-primary:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+}
+
+/* ─── Alertas ─────────────────────────────────────────────────────────────── */
+.alert {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.alert.error {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.alert.success {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+/* ─── Divisor ─────────────────────────────────────────────────────────────── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+
+/* ─── Badge ───────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  background: #eff6ff;
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  margin-left: 6px;
+}
+
+/* ─── Spinner de carga ────────────────────────────────────────────────────── */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Barra de usuario ────────────────────────────────────────────────────── */
+.user-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #eff6ff;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  font-size: 0.875rem;
+}
+
+.user-bar strong {
+  color: var(--primary);
+}
+
+.user-bar button {
+  background: none;
+  border: none;
+  color: var(--danger);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.user-bar button:hover {
+  text-decoration: underline;
+}
+
+/* ─── Selector de formularios ─────────────────────────────────────────────── */
+.selector-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.selector-btn {
+  padding: 14px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-family: inherit;
+}
+
+.selector-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ─── Firma Digital (react-signature-canvas) ──────────────────────────────── */
+.firma-container {
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* El canvas de react-signature-canvas */
+.firma-canvas {
+  display: block;
+  width: 100% !important;
+  height: 120px !important;
+  cursor: crosshair;
+  touch-action: none;
+  background: #fff;
+}
+
+.firma-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border-top: 1px solid var(--border);
+}
+
+.btn-limpiar {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.btn-limpiar:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.firma-hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  body {
+    padding: 12px 8px;
+  }
+
+  .card {
+    padding: 24px 16px;
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+  }
+
+  .selector-container {
+    grid-template-columns: 1fr;
+  }
+}

@@ -6,7 +6,7 @@ public class AuthController : ControllerBase
 {
     private readonly JwtService _jwtService;
 
-    // Usuarios en memoria (en produccion se reemplazaria con base de datos)
+    // Usuarios hardcodeados para desarrollo (en produccion usar base de datos)
     private static readonly List<(string Username, string Password, string DisplayName)> _users = new()
     {
         ("admin",    "1234",   "Administrador"),
@@ -19,8 +19,15 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Autentica al usuario. Devuelve el JWT en el body Y en una cookie HttpOnly.
-    /// El frontend puede usar cualquiera de los dos metodos segun su contexto.
+    /// Autentica al usuario y genera un JWT firmado.
+    /// El token se almacena en una Cookie con atributos HttpOnly y Secure
+    /// segun los lineamientos tecnicos del proyecto (PDF).
+    ///
+    /// Flujo de autenticacion:
+    /// 1. El usuario ingresa credenciales en el Frontend.
+    /// 2. El Backend valida y genera un JWT firmado.
+    /// 3. El Frontend almacena el token en una Cookie con atributos HttpOnly y Secure.
+    /// 4. Cada peticion posterior incluye el token de forma automatica para validacion.
     /// </summary>
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequest req)
@@ -33,21 +40,20 @@ public class AuthController : ControllerBase
 
         var token = _jwtService.GenerarToken(user.Username, user.DisplayName);
 
-        // Guardar en cookie HttpOnly (funciona cuando el frontend esta en un servidor HTTP)
+        // Guardar en Cookie con atributos HttpOnly y Secure
+        // segun lineamientos tecnicos del PDF
         Response.Cookies.Append("jwt_token", token, new CookieOptions
         {
-            HttpOnly = true,
-            Secure   = false, // true en produccion con HTTPS
-            SameSite = SameSiteMode.None, // None para permitir cross-origin
+            HttpOnly = true,                    // No accesible desde JavaScript (seguridad XSS)
+            Secure   = false,                   // true en produccion con HTTPS
+            SameSite = SameSiteMode.None,       // None para permitir cross-origin (frontend en otro puerto)
             Expires  = DateTimeOffset.UtcNow.AddHours(8)
         });
 
-        // Devolver el token tambien en el body para que el frontend
-        // pueda guardarlo en localStorage cuando se abre como file://
+        // Devolver informacion del usuario (NO el token, ya esta en la cookie)
         return Ok(new
         {
             message     = "Autenticacion exitosa.",
-            token       = token,
             username    = user.Username,
             displayName = user.DisplayName
         });
@@ -64,7 +70,8 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Verifica si el token JWT es valido (via cookie o Authorization header).
+    /// Verifica si el token JWT es valido (via cookie HttpOnly).
+    /// Util para que el frontend verifique si la sesion sigue activa al recargar.
     /// </summary>
     [HttpGet("me")]
     [Microsoft.AspNetCore.Authorization.Authorize]

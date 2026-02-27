@@ -15,48 +15,43 @@ builder.Services.AddScoped<ExcelService>();
 builder.Services.AddScoped<JwtService>();
 
 // CORS - Configuracion permisiva para desarrollo local
-// Necesario cuando el frontend se abre como file:// o desde cualquier origen
+// Necesario cuando el frontend React se sirve desde un origen diferente
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.SetIsOriginAllowed(_ => true)  // Acepta cualquier origen, incluyendo file://
+        policy.SetIsOriginAllowed(_ => true)  // Acepta cualquier origen en desarrollo
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials();             // Necesario para cookies y Authorization header
+              .AllowCredentials();             // Necesario para cookies HttpOnly
     });
 });
 
 // JWT - Autenticacion y Autorizacion
-var jwtSecretKey = builder.Configuration["Jwt:SecretKey"]!;
+// Configuracion exacta segun lineamientos tecnicos del proyecto (PDF)
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!)),
             ValidateIssuer = false,
             ValidateAudience = false,
             ClockSkew = TimeSpan.Zero
         };
 
-        // Leer el token desde la cookie HttpOnly O desde el header Authorization
+        // Leer el token desde la cookie HttpOnly (flujo principal segun lineamientos PDF)
+        // El frontend almacena el token en Cookie con atributos HttpOnly y Secure
+        // Cada peticion posterior incluye el token de forma automatica para validacion
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
             {
-                // Primero intentar desde cookie
                 if (context.Request.Cookies.TryGetValue("jwt_token", out var cookieToken))
                 {
                     context.Token = cookieToken;
-                    return Task.CompletedTask;
-                }
-                // Si no hay cookie, leer desde header Authorization: Bearer <token>
-                var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-                if (authHeader != null && authHeader.StartsWith("Bearer "))
-                {
-                    context.Token = authHeader.Substring("Bearer ".Length).Trim();
                 }
                 return Task.CompletedTask;
             }
@@ -71,9 +66,11 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Exportador Documentos API",
+        Title = "Exportador Documentos API - GD Ingenieria S.A.S",
         Version = "v1",
-        Description = "API para generar documentos Excel con motor agnostico de plantillas"
+        Description = "Motor de automatizacion agnostico para generacion de documentos Excel. " +
+                      "El motor itera sobre las llaves del JSON e inyecta los valores en los " +
+                      "placeholders {{llave}} de la plantilla Excel sin conocer el contenido del documento."
     });
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -83,7 +80,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Ingresa el token JWT"
+        Description = "Ingresa el token JWT (solo para pruebas en Swagger; en produccion se usa cookie HttpOnly)"
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -115,7 +112,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseRouting();
 
-// Habilitar CORS (debe ir antes de Authentication/Authorization)
+// CORS debe ir antes de Authentication/Authorization
 app.UseCors();
 
 // Autenticacion y Autorizacion
