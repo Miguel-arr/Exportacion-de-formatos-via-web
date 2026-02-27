@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -74,11 +75,31 @@ public class AuthController : ControllerBase
     /// Util para que el frontend verifique si la sesion sigue activa al recargar.
     /// </summary>
     [HttpGet("me")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Authorize]
     public IActionResult Me()
     {
         var username    = User.Identity?.Name ?? "";
         var displayName = User.FindFirst("displayName")?.Value ?? "";
         return Ok(new { username, displayName });
+    }
+
+    /// <summary>
+    /// Obtiene el token JWT para fallback en desarrollo.
+    /// En desarrollo, cuando el proxy de Vite no puede pasar cookies correctamente
+    /// (puertos diferentes), el frontend necesita el token en el header Authorization.
+    /// Este endpoint lo proporciona.
+    /// En produccion, esta ruta no es necesaria porque la cookie funciona correctamente.
+    /// </summary>
+    [HttpGet("token")]
+    [Authorize]
+    public IActionResult ObtenerToken()
+    {
+        var username    = User.Identity?.Name ?? "";
+        var displayName = User.FindFirst("displayName")?.Value ?? "";
+
+        // Generar un nuevo token (el frontend lo usara en el header Authorization)
+        var token = _jwtService.GenerarToken(username, displayName);
+
+        return Ok(new { token });
     }
 }

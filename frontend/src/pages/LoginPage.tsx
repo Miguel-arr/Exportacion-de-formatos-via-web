@@ -8,11 +8,12 @@
  *
  * El frontend NO maneja el token directamente. Simplemente envía las
  * credenciales y el backend setea la cookie HttpOnly automáticamente.
+ * Para fallback en desarrollo, también obtiene el token para el header Authorization.
  */
 
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { login } from '../services/api';
+import { login, almacenarTokenEnMemoria, obtenerTokenParaFallback } from '../services/api';
 import type { LoginRequest } from '../types/api';
 
 interface LoginPageProps {
@@ -33,6 +34,14 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     try {
       const req: LoginRequest = { username: username.trim(), password };
       const data = await login(req);
+
+      // Obtener el token para fallback en desarrollo
+      // (necesario para header Authorization si la cookie no funciona)
+      const token = await obtenerTokenParaFallback();
+      if (token) {
+        almacenarTokenEnMemoria(token);
+      }
+
       onLoginSuccess(data.username, data.displayName);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error de autenticación';
