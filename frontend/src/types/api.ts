@@ -15,6 +15,7 @@ export interface LoginResponse {
   message: string;
   username: string;
   displayName: string;
+  token?: string;
 }
 
 export interface MeResponse {

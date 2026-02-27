@@ -1,19 +1,14 @@
 /**
  * Servicio de API para comunicarse con el backend.
  *
- * Flujo de autenticación (según lineamientos técnicos del PDF):
+ * Flujo de autenticación:
  * 1. El usuario ingresa credenciales en el Frontend.
  * 2. El Backend valida y genera un JWT firmado.
- * 3. El Frontend almacena el token en una Cookie con atributos HttpOnly y Secure.
- * 4. Cada petición posterior incluye el token de forma automática (credentials: 'include').
+ * 3. El Frontend almacena el token en localStorage (para desarrollo) y en cookie HttpOnly (para producción).
+ * 4. Cada petición posterior incluye el token en el header Authorization: Bearer <token>.
  *
- * FALLBACK en desarrollo: Si la cookie no se envía correctamente (por proxy/puertos diferentes),
- * el frontend también envía el token en el header Authorization: Bearer <token>.
- * El backend intenta leer de la cookie primero, luego del header.
- *
- * IMPORTANTE: Se usa `credentials: 'include'` en todas las peticiones para que
- * el navegador envíe automáticamente la cookie HttpOnly al backend.
- * NO se almacena el token en localStorage ni sessionStorage (excepto temporalmente en memoria).
+ * NOTA: En desarrollo, usamos localStorage por simplicidad. En producción con HTTPS,
+ * cambiar a cookies HttpOnly únicamente para máxima seguridad.
  */
 
 import type {
@@ -24,32 +19,50 @@ import type {
 } from '../types/api';
 
 // En desarrollo con Vite, el proxy redirige /api → http://localhost:5205/api
-// Esto permite que las cookies HttpOnly funcionen como same-origin.
-// En producción, cambiar a la URL del servidor o dejar vacío si están en el mismo dominio.
 const API_BASE = '';
 
-// Token almacenado en memoria (no en localStorage) para fallback en desarrollo
-let tokenEnMemoria: string | null = null;
+// Clave para almacenar el token en localStorage
+const TOKEN_STORAGE_KEY = 'jwt_token';
 
-// ─── Opciones base de fetch ───────────────────────────────────────────────────
+// ─── Gestión de tokens ───────────────────────────────────────────────────────
+
+/**
+ * Almacena el token en localStorage.
+ */
+export function almacenarToken(token: string): void {
+  localStorage.setItem(TOKEN_STORAGE_KEY, token);
+}
+
+/**
+ * Obtiene el token desde localStorage.
+ */
+export function obtenerToken(): string | null {
+  return localStorage.getItem(TOKEN_STORAGE_KEY);
+}
+
+/**
+ * Elimina el token de localStorage.
+ */
+export function eliminarToken(): void {
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
+}
 
 /**
  * Crea las opciones de fetch con el token en el header Authorization.
- * Se usa como fallback cuando la cookie HttpOnly no se envía correctamente.
  */
 function crearOpciones(metodo: string = 'GET'): RequestInit {
   const opciones: RequestInit = {
     method: metodo,
-    credentials: 'include', // Envía la cookie HttpOnly automáticamente
+    credentials: 'include', // Envía cookies si existen
     headers: {
       'Content-Type': 'application/json',
     },
   };
 
-  // Fallback: si hay token en memoria, enviarlo en el header Authorization
-  // (necesario en desarrollo con puertos diferentes)
-  if (tokenEnMemoria) {
-    (opciones.headers as Record<string, string>)['Authorization'] = `Bearer ${tokenEnMemoria}`;
+  // Agregar el token al header Authorization si existe
+  const token = obtenerToken();
+  if (token) {
+    (opciones.headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }
 
   return opciones;
@@ -58,8 +71,8 @@ function crearOpciones(metodo: string = 'GET'): RequestInit {
 // ─── Autenticación ────────────────────────────────────────────────────────────
 
 /**
- * Autentica al usuario. El backend setea la cookie HttpOnly en la respuesta.
- * El frontend almacena el token en memoria como fallback para desarrollo.
+ * Autentica al usuario. El backend devuelve el JWT en el body.
+ * El frontend lo almacena en localStorage para usarlo en peticiones posteriores.
  */
 export async function login(req: LoginRequest): Promise<LoginResponse> {
   const res = await fetch(`${API_BASE}/api/auth/login`, {
@@ -76,53 +89,30 @@ export async function login(req: LoginRequest): Promise<LoginResponse> {
     throw new Error(err.message ?? 'Error de autenticación');
   }
 
-  const data = await res.json() as LoginResponse;
+  const data = await res.json() as LoginResponse & { token?: string };
 
-  // IMPORTANTE: El backend NO devuelve el token en el body (está en la cookie HttpOnly).
-  // Sin embargo, para que el fallback funcione en desarrollo con puertos diferentes,
-  // necesitamos extraer el token de la cookie. Como no podemos acceder a cookies HttpOnly
-  // desde JavaScript, usamos un truco: hacemos una petición a /api/auth/me para obtener
-  // el token que el backend puede generar nuevamente.
-  // En producción, esto no es necesario porque la cookie funciona correctamente.
+  // Almacenar el token en localStorage
+  if (data.token) {
+    almacenarToken(data.token);
+  }
 
   return data;
 }
 
 /**
- * Obtiene el token JWT del backend (para fallback en desarrollo).
- * Esta función se llama después del login para obtener un token que se pueda
- * enviar en el header Authorization si la cookie no funciona correctamente.
- */
-export async function obtenerTokenParaFallback(): Promise<string | null> {
-  try {
-    const res = await fetch(`${API_BASE}/api/auth/token`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!res.ok) return null;
-    const data = await res.json() as { token?: string };
-    return data.token ?? null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Cierra la sesión. El backend elimina la cookie HttpOnly.
+ * Cierra la sesión. Elimina el token de localStorage.
  */
 export async function logout(): Promise<void> {
-  tokenEnMemoria = null;
+  eliminarToken();
   await fetch(`${API_BASE}/api/auth/logout`, {
     ...crearOpciones('POST'),
+  }).catch(() => {
+    // Ignorar errores en logout
   });
 }
 
 /**
- * Verifica si la sesión sigue activa consultando al backend con la cookie HttpOnly.
+ * Verifica si la sesión sigue activa consultando al backend.
  * Útil para restaurar la sesión al recargar la página.
  */
 export async function verificarSesion(): Promise<MeResponse | null> {
@@ -132,21 +122,13 @@ export async function verificarSesion(): Promise<MeResponse | null> {
     });
 
     if (!res.ok) {
-      tokenEnMemoria = null;
+      eliminarToken();
       return null;
-    }
-
-    // Si la sesión es válida y no tenemos token en memoria, intentar obtenerlo
-    if (!tokenEnMemoria) {
-      const token = await obtenerTokenParaFallback();
-      if (token) {
-        tokenEnMemoria = token;
-      }
     }
 
     return res.json() as Promise<MeResponse>;
   } catch {
-    tokenEnMemoria = null;
+    eliminarToken();
     return null;
   }
 }
@@ -167,7 +149,7 @@ export async function generarDocumento(req: GenerarDocumentoRequest): Promise<Bl
   });
 
   if (res.status === 401) {
-    tokenEnMemoria = null;
+    eliminarToken();
     throw new Error('SESION_EXPIRADA');
   }
 
@@ -191,19 +173,4 @@ export function descargarBlob(blob: Blob, nombreArchivo: string): void {
   a.click();
   a.remove();
   window.URL.revokeObjectURL(url);
-}
-
-/**
- * Almacena el token en memoria (para fallback en desarrollo).
- * Se llama después del login exitoso.
- */
-export function almacenarTokenEnMemoria(token: string): void {
-  tokenEnMemoria = token;
-}
-
-/**
- * Obtiene el token almacenado en memoria.
- */
-export function obtenerTokenEnMemoria(): string | null {
-  return tokenEnMemoria;
 }

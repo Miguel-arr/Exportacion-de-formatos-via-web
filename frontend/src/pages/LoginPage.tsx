@@ -1,19 +1,16 @@
 /**
  * Página de Login.
  *
- * Implementa el punto 2 de los lineamientos técnicos:
- * "El usuario ingresa credenciales en el Frontend."
- * "El Backend valida y genera un JWT firmado."
- * "El Frontend almacena el token en una Cookie con atributos HttpOnly y Secure."
- *
- * El frontend NO maneja el token directamente. Simplemente envía las
- * credenciales y el backend setea la cookie HttpOnly automáticamente.
- * Para fallback en desarrollo, también obtiene el token para el header Authorization.
+ * Flujo de autenticación:
+ * 1. El usuario ingresa credenciales.
+ * 2. El Backend valida y devuelve un JWT.
+ * 3. El Frontend almacena el token en localStorage.
+ * 4. El Frontend envía el token en el header Authorization en peticiones posteriores.
  */
 
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { login, almacenarTokenEnMemoria, obtenerTokenParaFallback } from '../services/api';
+import { login } from '../services/api';
 import type { LoginRequest } from '../types/api';
 
 interface LoginPageProps {
@@ -34,14 +31,6 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     try {
       const req: LoginRequest = { username: username.trim(), password };
       const data = await login(req);
-
-      // Obtener el token para fallback en desarrollo
-      // (necesario para header Authorization si la cookie no funciona)
-      const token = await obtenerTokenParaFallback();
-      if (token) {
-        almacenarTokenEnMemoria(token);
-      }
-
       onLoginSuccess(data.username, data.displayName);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error de autenticación';

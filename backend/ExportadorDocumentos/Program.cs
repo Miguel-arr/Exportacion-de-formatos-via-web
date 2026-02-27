@@ -15,7 +15,6 @@ builder.Services.AddScoped<ExcelService>();
 builder.Services.AddScoped<JwtService>();
 
 // CORS - Configuracion permisiva para desarrollo local
-// Necesario cuando el frontend React se sirve desde un origen diferente
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -23,12 +22,13 @@ builder.Services.AddCors(options =>
         policy.SetIsOriginAllowed(_ => true)  // Acepta cualquier origen en desarrollo
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials();             // Necesario para cookies HttpOnly
+              .AllowCredentials();
     });
 });
 
 // JWT - Autenticacion y Autorizacion
-// Configuracion exacta segun lineamientos tecnicos del proyecto (PDF)
+// El token se lee desde el header Authorization: Bearer <token>
+// El frontend lo obtiene del login y lo almacena en localStorage
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -42,33 +42,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.Zero
         };
 
-        // Leer el token desde la cookie HttpOnly (flujo principal segun lineamientos PDF)
-        // El frontend almacena el token en Cookie con atributos HttpOnly y Secure
-        // Cada peticion posterior incluye el token de forma automatica para validacion
-        //
-        // FALLBACK: Si no hay cookie (ej: desarrollo con puertos diferentes), leer desde Authorization header
-        // Esto es necesario porque el proxy de Vite no puede pasar cookies cross-origin correctamente
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                // Intenta leer desde la cookie HttpOnly primero (flujo principal)
-                if (context.Request.Cookies.TryGetValue("jwt_token", out var cookieToken))
-                {
-                    context.Token = cookieToken;
-                    return Task.CompletedTask;
-                }
-
-                // Fallback: lee desde Authorization header (necesario en desarrollo con puertos diferentes)
-                var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-                if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
-                {
-                    context.Token = authHeader["Bearer ".Length..].Trim();
-                }
-
-                return Task.CompletedTask;
-            }
-        };
+        // El middleware JWT automaticamente lee desde Authorization header
+        // No es necesario configurar OnMessageReceived para desarrollo
     });
 
 builder.Services.AddAuthorization();
@@ -93,7 +68,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Ingresa el token JWT (solo para pruebas en Swagger; en produccion se usa cookie HttpOnly)"
+        Description = "Ingresa el token JWT en el formato: Bearer <token>"
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
