@@ -4,6 +4,7 @@ using System.Text.Json;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class DocumentosController : ControllerBase
 {
     private readonly ExcelService _excelService;
@@ -14,34 +15,24 @@ public class DocumentosController : ControllerBase
     }
 
     /// <summary>
-    /// Endpoint original de compatibilidad para el formulario de Permiso de Alturas.
-    /// </summary>
-    [HttpPost("generar-permiso")]
-    [Authorize]
-    public IActionResult GenerarPermiso([FromBody] PermisoTrabajoRequest req)
-    {
-        try
-        {
-            var archivo = _excelService.GenerarExcelConFirma(req);
-            return File(
-                archivo,
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "PermisoGenerado.xlsx"
-            );
-        }
-        catch (Exception ex)
-        {
-            return NotFound(ex.Message);
-        }
-    }
-
-    /// <summary>
-    /// Endpoint agnostico: recibe el nombre de la plantilla, la hoja y un JSON libre
-    /// con los datos a inyectar. El motor itera sobre las llaves del JSON y reemplaza
-    /// los placeholders {{llave}} en la plantilla Excel.
+    /// Único endpoint del motor agnóstico.
+    /// Recibe el nombre de la plantilla, la hoja y un JSON libre con los datos.
+    /// El motor itera sobre las llaves del JSON y reemplaza los placeholders
+    /// {{llave}} en la plantilla Excel sin conocer el contenido del documento.
+    ///
+    /// Ejemplo de body:
+    /// {
+    ///   "plantilla": "ALTURAS.xlsx",
+    ///   "hoja": "Permiso de trabajo",
+    ///   "datos": {
+    ///     "fecha_expedicion": "25/02/2026",
+    ///     "nombre_coordinador": "Juan Pérez",
+    ///     "es_apto": "X",
+    ///     "FIRMA_RESPONSABLE": { "firma_base64": "data:image/png;base64,..." }
+    ///   }
+    /// }
     /// </summary>
     [HttpPost("generar")]
-    [Authorize]
     public IActionResult GenerarDocumento([FromBody] GenerarDocumentoRequest req)
     {
         try
@@ -53,7 +44,7 @@ public class DocumentosController : ControllerBase
                 return BadRequest("El campo 'hoja' es requerido.");
 
             if (req.Datos == null || req.Datos.Count == 0)
-                return BadRequest("El campo 'datos' no puede estar vacio.");
+                return BadRequest("El campo 'datos' no puede estar vacío.");
 
             var archivo = _excelService.GenerarDesdeJson(req.Plantilla, req.Hoja, req.Datos);
             string nombreArchivo = Path.GetFileNameWithoutExtension(req.Plantilla) + "_Generado.xlsx";
@@ -76,11 +67,13 @@ public class DocumentosController : ControllerBase
 }
 
 /// <summary>
-/// Request para el endpoint agnostico de generacion de documentos.
+/// Contrato del motor agnóstico.
+/// Plantilla y Hoja identifican el archivo Excel.
+/// Datos es un JSON libre: cualquier llave coincide con {{llave}} en el Excel.
 /// </summary>
 public class GenerarDocumentoRequest
 {
     public required string Plantilla { get; set; }
-    public required string Hoja { get; set; }
+    public required string Hoja      { get; set; }
     public required Dictionary<string, JsonElement> Datos { get; set; }
 }

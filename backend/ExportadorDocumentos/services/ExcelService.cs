@@ -65,37 +65,6 @@ public class ExcelService
         return ms.ToArray();
     }
 
-    /// <summary>
-    /// Método de compatibilidad con el endpoint anterior de permiso de alturas.
-    /// </summary>
-    public byte[] GenerarExcelConFirma(PermisoTrabajoRequest req)
-    {
-        var datos = new Dictionary<string, JsonElement>();
-
-        void Agregar(string key, string value)
-        {
-            using var doc = JsonDocument.Parse($"\"{EscapeJson(value)}\"");
-            datos[key] = doc.RootElement.Clone();
-        }
-
-        Agregar("FECHA_PERMISO", req.Fecha);
-        Agregar("HORA_INICIO",   req.HoraInicio);
-        Agregar("AREA_TRABAJO",  req.Area);
-        Agregar("ALTURA_MAXIMA", req.AlturaMaxima);
-
-        if (!string.IsNullOrWhiteSpace(req.ImgFirmaResponsableTarea))
-        {
-            string firmaJson = $"{{\"firma_base64\":\"{EscapeJson(req.ImgFirmaResponsableTarea)}\"}}";
-            using var doc = JsonDocument.Parse(firmaJson);
-            datos["FIRMA_RESPONSABLE"] = doc.RootElement.Clone();
-        }
-
-        return GenerarDesdeJson("ALTURAS.xlsx", "Permiso de trabajo", datos);
-    }
-
-    private static string EscapeJson(string s) =>
-        s.Replace("\\", "\\\\").Replace("\"", "\\\"");
-
     private static void ReemplazarPlaceholder(IXLWorksheet ws, string placeholder, string valor)
     {
         foreach (var cell in ws.CellsUsed())
