@@ -32,8 +32,9 @@ public class DocumentosController : ControllerBase
     ///   }
     /// }
     /// </summary>
+    /// 
     [HttpPost("generar")]
-    public IActionResult GenerarDocumento([FromBody] GenerarDocumentoRequest req)
+    public IActionResult GenerarDocumento([FromBody] GenerarDocumentoRequest req) //json del final 
     {
         try
         {
@@ -50,9 +51,9 @@ public class DocumentosController : ControllerBase
             string nombreArchivo = Path.GetFileNameWithoutExtension(req.Plantilla) + "_Generado.xlsx";
 
             return File(
-                archivo,
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                nombreArchivo
+                archivo, //archivo generado en bytes por el servicio
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", //content type para Excel
+                nombreArchivo //nombre del archivo que se descargará en el frontend
             );
         }
         catch (FileNotFoundException ex)

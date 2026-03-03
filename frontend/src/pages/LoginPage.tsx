@@ -29,10 +29,17 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     setLoading(true);
 
     try {
-      const req: LoginRequest = { username: username.trim(), password };
-      const data = await login(req);
+      const req: LoginRequest = { 
+        username: username.trim(),
+         password 
+        };
+
+      const data = await login(req); //envía las credenciales al backend, recibe el token y datos del usuario
+
       onLoginSuccess(data.username, data.displayName);
+      
     } catch (err) {
+
       const msg = err instanceof Error ? err.message : 'Error de autenticación';
       if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('failed')) {
         setError('No se pudo conectar al servidor (http://localhost:5205). Verifica que el backend esté corriendo con "dotnet run".');

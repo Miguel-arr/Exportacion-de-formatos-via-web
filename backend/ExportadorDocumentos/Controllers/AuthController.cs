@@ -35,7 +35,7 @@ public class AuthController : ControllerBase
             u.Username == req.Username && u.Password == req.Password);
 
         if (user == default)
-            return Unauthorized(new { message = "Usuario o contrasena incorrectos." });
+            return Unauthorized(new {   });
 
         var token = _jwtService.GenerarToken(user.Username, user.DisplayName);
 

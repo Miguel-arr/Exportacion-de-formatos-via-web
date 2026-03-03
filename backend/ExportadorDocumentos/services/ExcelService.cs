@@ -62,8 +62,11 @@ public class ExcelService
 
         using var ms = new MemoryStream();
         workbook.SaveAs(ms);
-        return ms.ToArray();
+        return ms.ToArray(); //devuelve bytes el excel generado al controlador, que a su vez lo devuelve al frontend como descarga
     }
+
+
+    
 
     private static void ReemplazarPlaceholder(IXLWorksheet ws, string placeholder, string valor)
     {

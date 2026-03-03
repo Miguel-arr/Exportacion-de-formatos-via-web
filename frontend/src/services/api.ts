@@ -89,7 +89,7 @@ export async function login(req: LoginRequest): Promise<LoginResponse> {
     throw new Error(err.message ?? 'Error de autenticación');
   }
 
-  const data = await res.json() as LoginResponse & { token?: string };
+  const data = await res.json() as LoginResponse & { token?: string };// Esto lo combierte el JSON a un objeto typescript
 
   // Almacenar el token en localStorage
   if (data.token) {
@@ -98,6 +98,8 @@ export async function login(req: LoginRequest): Promise<LoginResponse> {
 
   return data;
 }
+
+
 
 /**
  * Cierra la sesión. Elimina el token de localStorage.
@@ -110,6 +112,11 @@ export async function logout(): Promise<void> {
     // Ignorar errores en logout
   });
 }
+
+
+
+
+
 
 /**
  * Verifica si la sesión sigue activa consultando al backend.
@@ -158,7 +165,7 @@ export async function generarDocumento(req: GenerarDocumentoRequest): Promise<Bl
     throw new Error(texto || `Error ${res.status}`);
   }
 
-  return res.blob();
+  return res.blob(); // El backend responde con un Blob (archivo Excel) para descargar
 }
 
 /**
