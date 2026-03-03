@@ -10,6 +10,18 @@ interface AlturasPageProps {
   onSesionExpirada: () => void;
 }
 
+interface Ejecutor {
+  nombres: string;
+  doc: string;
+  cargo: string;
+  examen: string;
+  certificado: string;
+  ss: string;
+  anclajes: string;
+  alcohol: string;
+  firma_base64?: string;
+}
+
 // COMPONENTE: Sección Desplegable (Acordeón)
 const SeccionDesplegable = ({ titulo, children, defaultAbierto = false }: { titulo: string, children: ReactNode, defaultAbierto?: boolean }) => {
   const [abierto, setAbierto] = useState(defaultAbierto);
@@ -27,62 +39,58 @@ const SeccionDesplegable = ({ titulo, children, defaultAbierto = false }: { titu
 export default function AlturasPage({ displayName, onVolver, onSesionExpirada }: AlturasPageProps) {
   const hoy = new Date().toISOString().split('T')[0];
 
-    // ================= ESTADO CENTRALIZADO =================
+  // ================= ESTADO CENTRALIZADO =================
   const [formData, setFormData] = useState<Record<string, any>>({
-    fecha_permiso: hoy,
-    hora_inicio: '',
-    hora_fin: '',
-    area_trabajo: '',
-    ubicacion_trabajo: '',
+    fecha_permiso: hoy, 
+    hora_inicio: '', 
+    hora_fin: '', 
+    area_trabajo: '', 
+    ubicacion_trabajo: '', 
     altura_maxima: '',
-
+    
     // Checkboxes Tipo de Trabajo
-    chk_mantenimiento: false,
-    chk_almacenamiento: false,
+    chk_mantenimiento: false, 
+    chk_almacenamiento: false, 
     chk_instalacion: false,
-    chk_supervicion: false,
-    chk_orden: false,
-    chk_izaje: false,
-    chk_arme: false,
+    chk_supervicion: false, 
+    chk_orden: false, 
+    chk_izaje: false, 
+    chk_arme: false, 
     otros_trabajos: '',
-
-    // Lista dinamica de ejecutores
-    ejecutores: [{ nombres: '', doc: '', cargo: '' }],
-
-    // Verificacion Ejecutor
-    ejec_examen: '',
-    ejec_certificado: '',
-    ejec_ss: '',
-    ejec_anclajes: '',
-    ejec_alcohol: '',
-
+    
+    // Lista dinámica de ejecutores (ahora con sus propios campos)
+    ejecutores: [{ 
+      nombres: '', doc: '', cargo: '', 
+      examen: '', certificado: '', ss: '', anclajes: '', alcohol: '' 
+    }],
+    
     // Permisos Adicionales
-    permiso_caliente: '',
-    permiso_confinados: '',
+    permiso_caliente: '', 
+    permiso_confinados: '', 
     permiso_electrico: '',
-
-    // Verificacion Peligros
-    chk_ats: '',
-    chk_socializacion: '',
-    chk_optimas: '',
-    chk_delimitado: '',
+    
+    // Verificación Peligros
+    chk_ats: '', 
+    chk_socializacion: '', 
+    chk_optimas: '', 
+    chk_delimitado: '', 
     chk_rescate: '',
-    chk_coordinador: '',
-    chk_clima: '',
-    chk_izar: '',
-    chk_portaherramienta: '',
+    chk_coordinador: '', 
+    chk_clima: '', 
+    chk_izar: '', 
+    chk_portaherramienta: '', 
     chk_electricidad: '',
     chk_verificacion_puntos_anclajes: '',
 
     // EPP
-    epp_casco: '',
-    epp_gafas: '',
-    epp_dotacion: '',
-    epp_guantes: '',
+    epp_casco: '', 
+    epp_gafas: '', 
+    epp_dotacion: '', 
+    epp_guantes: '', 
     epp_calzado: '',
     otros_elementos: '',
 
-    // Equipos Proteccion Caidas
+    // Equipos Protección Caídas
     anclaje_fijo: '', est_anclaje_fijo: '', obs_anclaje_fijo: '',
     arnes: '', est_arnes: '', obs_arnes: '',
     anclaje_movil: '', est_anclaje_movil: '', obs_anclaje_movil: '',
@@ -91,10 +99,11 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
     frenos: '', est_frenos: '', obs_frenos: '',
     eslinga_posicionamiento: '', est_eslinga_posicionamiento: '', obs_eslinga_posicionamiento: '',
     lvh_temporal: '', est_lvh_temporal: '', obs_lvh_temporal: '',
+    lvv_temporal: '', est_lvv_temporal: '', obs_lvv_temporal: '',
     eslinga_restriccion: '', est_eslinga_restriccion: '', obs_eslinga_restriccion: '',
     otros_equipos: '', estado_otros_equipos: '', obs_otros_equipos: '',
 
-    // Medidas Prevencion
+    // Medidas Prevención
     delimitacion_area: '', obs_delimitacion_area: '',
     barandas: '', obs_barandas: '',
     control_acceso: '', obs_control_acceso: '',
@@ -115,25 +124,25 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
     // Herramientas
     herramientas_utilizar: '',
 
-    // Claridad de Caida
-    distancia_Caida_libre: 0,
+    // Claridad de Caída
+    distancia_Caida_libre: 0, 
     altura_trabajador: 0,
-    longitud_eslinga: 0,
-    absorbedor_choque: 0,
+    longitud_eslinga: 0, 
+    absorbedor_choque: 0, 
     factor_seguridad: 0.6,
-
+    
     // Nombres, Docs y Cargos para Firmas
     nombre_responsable_tarea: '', doc_responsable_tarea: '', cargo_responsable_tarea: '',
     nombre_coordinador_altura: '', doc_coordinador_altura: '', cargo_coordinador_altura: '',
     nombre_responsable_emergencia: '', doc_responsable_emergencia: '', cargo_responsable_emergencia: '',
-
+    
     // Datos de Cierre
-    tarea_terminada: '',
-    orden_aseo_realizado: '',
-    hubo_incidentes: '',
-    nombre_cierre: '',
-    cargo_cierre: '',
-    fecha_cierre: hoy,
+    tarea_terminada: '', 
+    orden_aseo_realizado: '', 
+    hubo_incidentes: '', 
+    nombre_cierre: '', 
+    cargo_cierre: '', 
+    fecha_cierre: hoy, 
     hora_cierre: '',
     motivo_cierre: '',
     observaciones_finales: '',
@@ -147,21 +156,30 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
   const firmaCoordinadorRef = useRef<SignaturePadHandle>(null);
   const firmaEmergenciaRef = useRef<SignaturePadHandle>(null);
   const firmaCierreRef = useRef<SignaturePadHandle>(null);
+  
+  // Referencias dinámicas para las firmas de los ejecutores
+  const firmasEjecutoresRefs = useRef<(SignaturePadHandle | null)[]>([]);
 
   // ================= MANEJADORES GLOBALES =================
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {// Te actualiza cualquier campo del form, incluyendo checkboxes y radios mientras tenga el atributo "name" correcto
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value }));
   };
 
-  const handleEjecutorChange = (index: number, campo: string, valor: string) => {
+  const handleEjecutorChange = (index: number, campo: keyof Ejecutor, valor: string) => {
     const nuevosEjecutores = [...formData.ejecutores];
     nuevosEjecutores[index][campo] = valor;
     setFormData({ ...formData, ejecutores: nuevosEjecutores });
   };
 
   const agregarEjecutor = () => {
-    setFormData({ ...formData, ejecutores: [...formData.ejecutores, { nombres: '', doc: '', cargo: '' }] });
+    setFormData({ 
+      ...formData, 
+      ejecutores: [...formData.ejecutores, { 
+        nombres: '', doc: '', cargo: '', 
+        examen: '', certificado: '', ss: '', anclajes: '', alcohol: '' 
+      }] 
+    });
   };
 
   const eliminarEjecutor = (index: number) => {
@@ -183,21 +201,29 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
         datos[`chk_${chk}`] = formData[`chk_${chk}`] ? 'X' : '';
       });
 
-      // Aplanar la lista de ejecutores
-      formData.ejecutores.forEach((ejec: any, index: number) => {
-        datos[`ejecutor_nombres_${index + 1}`] = ejec.nombres;
-        datos[`ejecutor_doc_${index + 1}`] = ejec.doc;
-        datos[`ejecutor_cargo_${index + 1}`] = ejec.cargo;
-      });
-      // Para compatibilidad con placeholders únicos si solo hay uno
-      if (formData.ejecutores.length > 0) {
-        datos['ejecutor_nombres'] = formData.ejecutores[0].nombres;
-        datos['ejecutor_doc'] = formData.ejecutores[0].doc;
-        datos['ejecutor_cargo'] = formData.ejecutores[0].cargo;
-      }
-      delete datos.ejecutores;
+      // Mapear con tilde si el Excel lo exige así
+      datos['ubicación_trabajo'] = formData.ubicacion_trabajo;
+      delete datos.ubicacion_trabajo;
 
-      // Captura de Firmas
+      // PROCESAR EJECUTORES PARA EXPANSIÓN DINÁMICA
+      // El backend debe estar configurado para recibir un array 'ejecutores' 
+      // y expandir la tabla en el Excel automáticamente.
+      datos.ejecutores = formData.ejecutores.map((ejec: Ejecutor, index: number) => {
+        const firmaBase64 = firmasEjecutoresRefs.current[index]?.getFirmaBase64();
+        return {
+          ejecutor_nombres: ejec.nombres,
+          ejecutor_doc: ejec.doc,
+          ejecutor_cargo: ejec.cargo,
+          ejec_examen: ejec.examen,
+          ejec_certificado: ejec.certificado,
+          ejec_ss: ejec.ss,
+          ejec_anclajes: ejec.anclajes,
+          ejec_alcohol: ejec.alcohol,
+          firma_ejecutor: firmaBase64 ? { firma_base64: firmaBase64 } : null
+        };
+      });
+
+      // Captura de Firmas de Autorización
       const fResp = firmaResponsableRef.current?.getFirmaBase64();
       if (fResp) datos.ImgFirmaResponsableTarea = { firma_base64: fResp };
       
@@ -236,13 +262,13 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
     }
   };
 
-  const RadioGroup = ({ label, name, options = ['SI', 'NO', 'N/A'] }: { label: string, name: string, options?: string[] }) => (
+  const RadioGroup = ({ label, name, value, onChange, options = ['SI', 'NO', 'N/A'] }: { label: string, name: string, value: string, onChange: any, options?: string[] }) => (
     <div style={styles.radioRow}>
-      <span style={{ flex: 1, fontWeight: '500' }}>{label}</span>
-      <div style={{ display: 'flex', gap: '20px' }}>
+      <span style={{ flex: 1, fontWeight: '500', fontSize: '13px' }}>{label}</span>
+      <div style={{ display: 'flex', gap: '10px' }}>
         {options.map(opt => (
-          <label key={opt} style={styles.checkLabel}>
-            <input type="radio" name={name} value={opt} checked={formData[name] === opt} onChange={handleChange} required /> {opt}
+          <label key={opt} style={{ ...styles.checkLabel, fontSize: '12px' }}>
+            <input type="radio" name={name} value={opt} checked={value === opt} onChange={onChange} required /> {opt}
           </label>
         ))}
       </div>
@@ -289,57 +315,77 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
             <h4 style={{ margin: 0, color: '#374151', fontSize: '16px' }}>Datos de los Ejecutores</h4>
             <button type="button" onClick={agregarEjecutor} style={styles.btnPrimarioChico}>+ Agregar Ejecutor</button>
           </div>
-          {formData.ejecutores.map((ejec: any, index: number) => (
-            <div key={index} style={{ ...styles.grid3, alignItems: 'flex-end', marginBottom: '10px' }}>
-              <input type="text" placeholder="Nombres" value={ejec.nombres} onChange={(e) => handleEjecutorChange(index, 'nombres', e.target.value)} style={styles.input} required />
-              <input type="text" placeholder="Documento" value={ejec.doc} onChange={(e) => handleEjecutorChange(index, 'doc', e.target.value)} style={styles.input} required />
-              <input type="text" placeholder="Cargo" value={ejec.cargo} onChange={(e) => handleEjecutorChange(index, 'cargo', e.target.value)} style={styles.input} required />
-              {formData.ejecutores.length > 1 && <button type="button" onClick={() => eliminarEjecutor(index)} style={styles.btnEliminar}>X</button>}
+          
+          {formData.ejecutores.map((ejec: Ejecutor, index: number) => (
+            <div key={index} style={{ marginBottom: '30px', padding: '20px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                <h5 style={{ margin: 0 }}>Ejecutor #{index + 1}</h5>
+                {formData.ejecutores.length > 1 && <button type="button" onClick={() => eliminarEjecutor(index)} style={styles.btnEliminar}>Eliminar Ejecutor</button>}
+              </div>
+              
+              <div style={styles.grid3}>
+                <input type="text" placeholder="Nombres y Apellidos" value={ejec.nombres} onChange={(e) => handleEjecutorChange(index, 'nombres', e.target.value)} style={styles.input} required />
+                <input type="text" placeholder="Documento (C.C/C.E/P.E.P)" value={ejec.doc} onChange={(e) => handleEjecutorChange(index, 'doc', e.target.value)} style={styles.input} required />
+                <input type="text" placeholder="Cargo/Rol" value={ejec.cargo} onChange={(e) => handleEjecutorChange(index, 'cargo', e.target.value)} style={styles.input} required />
+              </div>
+              
+              <div style={{ marginTop: '15px' }}>
+                <RadioGroup label="¿Examen médico vigente?" name={`ejec_examen_${index}`} value={ejec.examen} onChange={(e: any) => handleEjecutorChange(index, 'examen', e.target.value)} />
+                <RadioGroup label="¿Certificado alturas vigente?" name={`ejec_cert_${index}`} value={ejec.certificado} onChange={(e: any) => handleEjecutorChange(index, 'certificado', e.target.value)} />
+                <RadioGroup label="¿Seguridad social vigente?" name={`ejec_ss_${index}`} value={ejec.ss} onChange={(e: any) => handleEjecutorChange(index, 'ss', e.target.value)} />
+                <RadioGroup label="¿Verifica sus anclajes?" name={`ejec_anc_${index}`} value={ejec.anclajes} onChange={(e: any) => handleEjecutorChange(index, 'anclajes', e.target.value)} />
+                <RadioGroup label="¿Consumió alcohol (24h)?" name={`ejec_alc_${index}`} value={ejec.alcohol} onChange={(e: any) => handleEjecutorChange(index, 'alcohol', e.target.value)} />
+              </div>
+            
+              <div style={{ marginTop: '15px', maxWidth: '400px', width: '100%' }}>
+                <SignaturePad 
+                  ref={(el) => {
+                    firmasEjecutoresRefs.current[index] = el;
+                  }}
+                  label={`Firma Ejecutor ${index + 1}`} 
+                />
+              </div>
             </div>
           ))}
         </SeccionDesplegable>
 
-        <SeccionDesplegable titulo="2. Verificación de Condiciones del Ejecutor">
-          <RadioGroup label="¿Examen médico vigente?" name="ejec_examen" />
-          <RadioGroup label="¿Certificado de alturas vigente?" name="ejec_certificado" />
-          <RadioGroup label="¿Afiliación a SS vigente?" name="ejec_ss" />
-          <RadioGroup label="¿Conoce y verifica sus anclajes?" name="ejec_anclajes" />
-          <RadioGroup label="¿Se realizó prueba de alcohol?" name="ejec_alcohol" />
+        <SeccionDesplegable titulo="2. Permisos Adicionales">
+          <RadioGroup label="¿Permiso en caliente?" name="permiso_caliente" value={formData.permiso_caliente} onChange={handleChange} />
+          <RadioGroup label="¿Permiso espacios confinados?" name="permiso_confinados" value={formData.permiso_confinados} onChange={handleChange} />
+          <RadioGroup label="¿Permiso riesgo eléctrico?" name="permiso_electrico" value={formData.permiso_electrico} onChange={handleChange} />
         </SeccionDesplegable>
 
-        <SeccionDesplegable titulo="3. Permisos Adicionales">
-          <RadioGroup label="¿Permiso en caliente?" name="permiso_caliente" />
-          <RadioGroup label="¿Permiso espacios confinados?" name="permiso_confinados" />
-          <RadioGroup label="¿Permiso riesgo eléctrico?" name="permiso_electrico" />
+        <SeccionDesplegable titulo="3. Verificación de Peligros y Riesgos">
+          <div style={styles.grid2}>
+            <RadioGroup label="¿ATS socializado?" name="chk_ats" value={formData.chk_ats} onChange={handleChange} />
+            <RadioGroup label="¿Socialización de procedimientos?" name="chk_socializacion" value={formData.chk_socializacion} onChange={handleChange} />
+            <RadioGroup label="¿Condiciones óptimas?" name="chk_optimas" value={formData.chk_optimas} onChange={handleChange} />
+            <RadioGroup label="¿Área delimitada?" name="chk_delimitado" value={formData.chk_delimitado} onChange={handleChange} />
+            <RadioGroup label="¿Plan de rescate?" name="chk_rescate" value={formData.chk_rescate} onChange={handleChange} />
+            <RadioGroup label="¿Coordinador presente?" name="chk_coordinador" value={formData.chk_coordinador} onChange={handleChange} />
+            <RadioGroup label="¿Clima favorable?" name="chk_clima" value={formData.chk_clima} onChange={handleChange} />
+            <RadioGroup label="¿Izaje de cargas?" name="chkizar" value={formData.chk_izar} onChange={handleChange} />
+            <RadioGroup label="¿Portaherramientas?" name="chk_portaherramienta" value={formData.chk_portaherramienta} onChange={handleChange} />
+            <RadioGroup label="¿Riesgo eléctrico?" name="chk_electricidad" value={formData.chk_electricidad} onChange={handleChange} />
+            <RadioGroup label="¿Verificación puntos anclaje?" name="chk_verificacion_puntos_anclajes" value={formData.chk_verificacion_puntos_anclajes} onChange={handleChange} />
+          </div>
         </SeccionDesplegable>
 
-        <SeccionDesplegable titulo="4. Verificación de Peligros y Riesgos">
-          <RadioGroup label="¿ATS socializado?" name="chk_ats" />
-          <RadioGroup label="¿Socialización de procedimientos?" name="chk_socializacion" />
-          <RadioGroup label="¿Condiciones óptimas?" name="chk_optimas" />
-          <RadioGroup label="¿Área delimitada?" name="chk_delimitado" />
-          <RadioGroup label="¿Plan de rescate?" name="chk_rescate" />
-          <RadioGroup label="¿Coordinador presente?" name="chk_coordinador" />
-          <RadioGroup label="¿Clima favorable?" name="chk_clima" />
-          <RadioGroup label="¿Izaje de cargas?" name="chk_izar" />
-          <RadioGroup label="¿Portaherramientas?" name="chk_portaherramienta" />
-          <RadioGroup label="¿Riesgo eléctrico?" name="chk_electricidad" />
-          <RadioGroup label="¿Verificación puntos anclaje?" name="chk_verificacion_puntos_anclajes" />
+        <SeccionDesplegable titulo="4. Elementos de Protección Personal (EPP)">
+          <div style={styles.grid2}>
+            <RadioGroup label="Casco" name="epp_casco" value={formData.epp_casco} onChange={handleChange} />
+            <RadioGroup label="Gafas" name="epp_gafas" value={formData.epp_gafas} onChange={handleChange} />
+            <RadioGroup label="Dotación" name="epp_dotacion" value={formData.epp_dotacion} onChange={handleChange} />
+            <RadioGroup label="Guantes" name="epp_guantes" value={formData.epp_guantes} onChange={handleChange} />
+            <RadioGroup label="Calzado" name="epp_calzado" value={formData.epp_calzado} onChange={handleChange} />
+          </div>
+          <div style={{ ...styles.inputGroup, marginTop: '10px' }}><label>Otros EPP:</label> <input type="text" name="otros_elementos" value={formData.otros_elementos} onChange={handleChange} style={styles.input} /></div>
         </SeccionDesplegable>
 
-        <SeccionDesplegable titulo="5. Elementos de Protección Personal (EPP)">
-          <RadioGroup label="Casco" name="epp_casco" />
-          <RadioGroup label="Gafas" name="epp_gafas" />
-          <RadioGroup label="Dotación" name="epp_dotacion" />
-          <RadioGroup label="Guantes" name="epp_guantes" />
-          <RadioGroup label="Calzado" name="epp_calzado" />
-          <div style={styles.inputGroup}><label>Otros EPP:</label> <input type="text" name="otros_elementos" value={formData.otros_elementos} onChange={handleChange} style={styles.input} /></div>
-        </SeccionDesplegable>
-
-        <SeccionDesplegable titulo="6. Equipos de Protección Contra Caídas">
-          {['anclaje_fijo', 'arnes', 'anclaje_movil', 'mosquetones', 'eslinga_detencion', 'frenos', 'eslinga_posicionamiento', 'lvh_temporal', 'eslinga_restriccion'].map(eq => (
-            <div key={eq} style={{ marginBottom: '20px', padding: '10px', background: '#f9fafb', borderRadius: '6px' }}>
-              <RadioGroup label={`¿Usa ${eq.replace('_', ' ')}?`} name={eq} />
+        <SeccionDesplegable titulo="5. Equipos de Protección Contra Caídas">
+          {['anclaje_fijo', 'arnes', 'anclaje_movil', 'mosquetones', 'eslinga_detencion', 'frenos', 'eslinga_posicionamiento', 'lvh_temporal', 'lvv_temporal', 'eslinga_restriccion'].map(eq => (
+            <div key={eq} style={{ marginBottom: '15px', padding: '10px', background: '#f9fafb', borderRadius: '6px' }}>
+              <RadioGroup label={`¿Usa ${eq.replace(/_/g, ' ')}?`} name={eq} value={formData[eq]} onChange={handleChange} />
               <div style={styles.grid2}>
                 <div style={styles.inputGroup}><label>Estado:</label> <input type="text" name={`est_${eq}`} value={formData[`est_${eq}`]} onChange={handleChange} style={styles.input} /></div>
                 <div style={styles.inputGroup}><label>Observaciones:</label> <input type="text" name={`obs_${eq}`} value={formData[`obs_${eq}`]} onChange={handleChange} style={styles.input} /></div>
@@ -355,26 +401,27 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
           </div>
         </SeccionDesplegable>
 
-        <SeccionDesplegable titulo="7. Medidas de Prevención">
+        <SeccionDesplegable titulo="6. Medidas de Prevención y Sistemas de Acceso">
+          <h4 style={styles.subTitle}>Medidas de Prevención</h4>
           {['delimitacion_area', 'barandas', 'control_acceso', 'ayudantes_seguridad', 'lineas_advertencia', 'otros_medidas'].map(med => (
-            <div key={med} style={{ marginBottom: '15px' }}>
-              <RadioGroup label={`¿${med.replace('_', ' ')}?`} name={med} />
+            <div key={med} style={{ marginBottom: '10px' }}>
+              <RadioGroup label={`¿${med.replace(/_/g, ' ')}?`} name={med} value={formData[med]} onChange={handleChange} />
               <div style={styles.inputGroup}><label>Observaciones:</label> <input type="text" name={`obs_${med}`} value={formData[`obs_${med}`]} onChange={handleChange} style={styles.input} /></div>
             </div>
           ))}
-          <RadioGroup label="Control de huecos" name="control_huecos" />
-        </SeccionDesplegable>
-
-        <SeccionDesplegable titulo="8. Sistemas de Acceso">
+          <RadioGroup label="Control de huecos" name="control_huecos" value={formData.control_huecos} onChange={handleChange} />
+          
+          <hr style={styles.hr} />
+          <h4 style={styles.subTitle}>Sistemas de Acceso</h4>
           {['andamios', 'elevadores_personas', 'andamios_colgantes', 'trabajo_suspension', 'escaleras_fijas', 'otros_sistemas', 'escaleras_moviles'].map(sis => (
-            <div key={sis} style={{ marginBottom: '15px' }}>
-              <RadioGroup label={`¿${sis.replace('_', ' ')}?`} name={sis} />
+            <div key={sis} style={{ marginBottom: '10px' }}>
+              <RadioGroup label={`¿${sis.replace(/_/g, ' ')}?`} name={sis} value={formData[sis]} onChange={handleChange} />
               <div style={styles.inputGroup}><label>Observaciones:</label> <input type="text" name={`obs_${sis}`} value={formData[`obs_${sis}`]} onChange={handleChange} style={styles.input} /></div>
             </div>
           ))}
         </SeccionDesplegable>
 
-        <SeccionDesplegable titulo="9. Herramientas y Claridad de Caída">
+        <SeccionDesplegable titulo="7. Herramientas y Claridad de Caída">
           <div style={styles.inputGroup}><label>Herramientas a utilizar:</label> <textarea name="herramientas_utilizar" value={formData.herramientas_utilizar} onChange={handleChange} style={styles.textarea} rows={3}></textarea></div>
           <hr style={styles.hr} />
           <h4 style={styles.subTitle}>Cálculo Claridad de Caída</h4>
@@ -387,7 +434,7 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
           </div>
         </SeccionDesplegable>
 
-        <SeccionDesplegable titulo="10. Firmas de Autorización">
+        <SeccionDesplegable titulo="8. Firmas de Autorización">
           <div style={styles.grid3}>
             <div style={styles.firmaBox}>
               <h5 style={{ margin: '0 0 10px 0' }}>Responsable Tarea</h5>
@@ -413,11 +460,11 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
           </div>
         </SeccionDesplegable>
 
-        <SeccionDesplegable titulo="11. Cierre" defaultAbierto={true}>
+        <SeccionDesplegable titulo="9. Cierre" defaultAbierto={true}>
           <div style={styles.grid2}>
-            <RadioGroup label="¿Tarea terminada?" name="tarea_terminada" options={['SI', 'NO']} />
-            <RadioGroup label="¿Orden y aseo?" name="orden_aseo_realizado" options={['SI', 'NO']} />
-            <RadioGroup label="¿Incidentes?" name="hubo_incidentes" options={['SI', 'NO']} />
+            <RadioGroup label="¿Tarea terminada?" name="tarea_terminada" value={formData.tarea_terminada} onChange={handleChange} options={['SI', 'NO']} />
+            <RadioGroup label="¿Orden y aseo?" name="orden_aseo_realizado" value={formData.orden_aseo_realizado} onChange={handleChange} options={['SI', 'NO']} />
+            <RadioGroup label="¿Incidentes?" name="hubo_incidentes" value={formData.hubo_incidentes} onChange={handleChange} options={['SI', 'NO']} />
           </div>
           <div style={{ ...styles.grid3, marginTop: '20px' }}>
             <div style={styles.inputGroup}><label>Nombre Cierre:</label> <input type="text" name="nombre_cierre" value={formData.nombre_cierre} onChange={handleChange} style={styles.input} /></div>
@@ -447,7 +494,7 @@ const styles = {
   grid3: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' },
   grid2: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' },
   inputGroup: { display: 'flex', flexDirection: 'column' as const, gap: '5px' },
-  input: { padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' },
+  input: { padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', width: '100%', boxSizing: 'border-box' as const },
   textarea: { padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', width: '100%', boxSizing: 'border-box' as const },
   checkLabel: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' },
   radioRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f1f5f9' },
@@ -456,6 +503,6 @@ const styles = {
   firmaBox: { padding: '15px', border: '1px dashed #cbd5e1', borderRadius: '8px', background: '#fcfcfc' },
   btnSecundario: { padding: '8px 16px', background: '#f1f5f9', border: 'none', borderRadius: '6px', cursor: 'pointer' },
   btnPrimarioChico: { padding: '6px 12px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' },
-  btnEliminar: { padding: '6px 10px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' },
+  btnEliminar: { padding: '6px 10px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' },
   btnSubmit: { width: '100%', padding: '15px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '16px', fontWeight: '600' }
 };
