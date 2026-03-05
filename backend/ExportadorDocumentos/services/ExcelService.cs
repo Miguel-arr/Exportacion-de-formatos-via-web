@@ -121,7 +121,6 @@ public class ExcelService
                 foreach (var prop in item.EnumerateObject())
                 {
                     string subPlaceholder = $"{{{{{prop.Name}}}}}";
-                    string valorRaw = prop.Value.ValueKind == JsonValueKind.Null ? "" : prop.Value.ToString();
 
                     // Buscar la celda que contiene el placeholder en la fila actual
                     foreach (var cell in filaActual.Cells())
@@ -129,13 +128,23 @@ public class ExcelService
                         var textoCelda = cell.GetString();
                         if (textoCelda.Contains(subPlaceholder))
                         {
-                            // DETECTAR SI ES UNA FIRMA (BASE64)
-                            if (prop.Name.ToLower().Contains("firma") && valorRaw.Length > 100)
+                            // DETECTAR SI ES UN OBJETO DE FIRMA { firma_base64: "..." }
+                            if (prop.Value.ValueKind == JsonValueKind.Object &&
+                                prop.Value.TryGetProperty("firma_base64", out var base64El))
                             {
-                                InyectarFirmaEnCelda(ws, cell, valorRaw);
+                                string base64Str = base64El.GetString() ?? "";
+                                if (!string.IsNullOrWhiteSpace(base64Str))
+                                    InyectarFirmaEnCelda(ws, cell, base64Str);
+                                else
+                                    cell.Value = string.Empty;
+                            }
+                            else if (prop.Value.ValueKind == JsonValueKind.Null)
+                            {
+                                cell.Value = string.Empty;
                             }
                             else
                             {
+                                string valorRaw = prop.Value.ToString();
                                 cell.Value = textoCelda.Replace(subPlaceholder, valorRaw);
                                 cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                                 cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
