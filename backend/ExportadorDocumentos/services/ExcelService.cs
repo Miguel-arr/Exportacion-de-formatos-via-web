@@ -2,11 +2,6 @@ using ClosedXML.Excel;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-/// <summary>
-/// Motor de generación agnóstico de documentos Excel.
-/// Itera sobre las llaves del JSON e inyecta los valores en los placeholders
-/// que tengan el mismo nombre (formato {{llave}}) en la plantilla.
-/// </summary>
 public class ExcelService
 {
     private readonly IWebHostEnvironment _env;
@@ -16,9 +11,6 @@ public class ExcelService
         _env = env;
     }
 
-    /// <summary>
-    /// Genera un archivo Excel a partir de una plantilla y un JSON agnóstico.
-    /// </summary>
     public byte[] GenerarDesdeJson(
         string templateName,
         string sheetName,
@@ -32,15 +24,18 @@ public class ExcelService
         using var workbook = new XLWorkbook(templatePath);
         var ws = workbook.Worksheet(sheetName);
 
-        foreach (var kvp in datos)
+        // Primero procesamos las listas dinámicas (ejecutores, etc.)
+        foreach (var kvp in datos.Where(d => d.Value.ValueKind == JsonValueKind.Array))
+        {
+            ProcesarListaDinamica(ws, kvp.Key, kvp.Value);
+        }
+
+        // Luego procesamos los valores simples y firmas fuera de listas
+        foreach (var kvp in datos.Where(d => d.Value.ValueKind != JsonValueKind.Array))
         {
             string placeholder = $"{{{{{kvp.Key}}}}}";
 
-            if (kvp.Value.ValueKind == JsonValueKind.Array)
-            {
-                ProcesarListaDinamica(ws, placeholder, kvp.Value);
-            }
-            else if (kvp.Value.ValueKind == JsonValueKind.Object)
+            if (kvp.Value.ValueKind == JsonValueKind.Object)
             {
                 if (kvp.Value.TryGetProperty("firma_base64", out var base64El))
                 {
@@ -50,10 +45,7 @@ public class ExcelService
             }
             else
             {
-                string valor = kvp.Value.ValueKind == JsonValueKind.Null
-                    ? ""
-                    : kvp.Value.ToString();
-
+                string valor = kvp.Value.ValueKind == JsonValueKind.Null ? "" : kvp.Value.ToString();
                 ReemplazarPlaceholder(ws, placeholder, valor);
             }
         }
@@ -62,11 +54,8 @@ public class ExcelService
 
         using var ms = new MemoryStream();
         workbook.SaveAs(ms);
-        return ms.ToArray(); //devuelve bytes el excel generado al controlador, que a su vez lo devuelve al frontend como descarga
+        return ms.ToArray();
     }
-
-
-    
 
     private static void ReemplazarPlaceholder(IXLWorksheet ws, string placeholder, string valor)
     {
@@ -78,110 +67,127 @@ public class ExcelService
         }
     }
 
-    private static void ProcesarListaDinamica(IXLWorksheet ws, string placeholder, JsonElement array)
+    private static void ProcesarListaDinamica(IXLWorksheet ws, string key, JsonElement array)
     {
-        IXLCell? semillaCell = null;
+        var items = array.EnumerateArray().ToList();
+        if (items.Count == 0) return;
+
+        // Intentar encontrar la fila semilla basada en el nombre de la lista
+        string prefijo = key.EndsWith("es") ? key.Substring(0, key.Length - 2) : 
+                        key.EndsWith("s") ? key.Substring(0, key.Length - 1) : key;
+        
+        IXLRow? filaSemilla = null;
         foreach (var cell in ws.CellsUsed())
         {
-            if (cell.GetString().Contains(placeholder))
+            string texto = cell.GetString();
+            if (texto.Contains($"{{{{{prefijo}_"))
             {
-                semillaCell = cell;
+                filaSemilla = cell.WorksheetRow();
                 break;
             }
         }
 
-        if (semillaCell == null) return;
+        if (filaSemilla == null) return;
 
-        int filaBase = semillaCell.Address.RowNumber;
-        var items = array.EnumerateArray().ToList();
+        int filaBase = filaSemilla.RowNumber();
 
-        if (items.Count == 0)
+        // Si hay más de un elemento, insertamos y clonamos formato
+        if (items.Count > 1)
         {
-            ws.Row(filaBase).Clear();
-            return;
+            ws.Row(filaBase).InsertRowsBelow(items.Count - 1);
+            
+            for (int i = 1; i < items.Count; i++)
+            {
+                var nuevaFila = ws.Row(filaBase + i);
+                nuevaFila.Height = filaSemilla.Height;
+                
+                foreach (var cell in filaSemilla.Cells())
+                {
+                    var nuevaCelda = nuevaFila.Cell(cell.Address.ColumnNumber);
+                    nuevaCelda.Value = cell.Value;
+                    nuevaCelda.Style = cell.Style;
+                }
+            }
         }
 
-        if (items.Count > 1)
-            ws.Row(filaBase).InsertRowsBelow(items.Count - 1);
-
+        // Llenamos los datos en cada fila
         for (int i = 0; i < items.Count; i++)
         {
-            int filaActual = filaBase + i;
             var item = items[i];
+            var filaActual = ws.Row(filaBase + i);
 
             if (item.ValueKind == JsonValueKind.Object)
             {
                 foreach (var prop in item.EnumerateObject())
                 {
                     string subPlaceholder = $"{{{{{prop.Name}}}}}";
-                    string valor = prop.Value.ValueKind == JsonValueKind.Null
-                        ? ""
-                        : prop.Value.ToString();
+                    string valorRaw = prop.Value.ValueKind == JsonValueKind.Null ? "" : prop.Value.ToString();
 
-                    foreach (var cell in ws.Row(filaActual).CellsUsed())
+                    // Buscar la celda que contiene el placeholder en la fila actual
+                    foreach (var cell in filaActual.Cells())
                     {
-                        var texto = cell.GetString();
-                        if (texto.Contains(subPlaceholder))
-                            cell.Value = texto.Replace(subPlaceholder, valor);
+                        var textoCelda = cell.GetString();
+                        if (textoCelda.Contains(subPlaceholder))
+                        {
+                            // DETECTAR SI ES UNA FIRMA (BASE64)
+                            if (prop.Name.ToLower().Contains("firma") && valorRaw.Length > 100)
+                            {
+                                InyectarFirmaEnCelda(ws, cell, valorRaw);
+                            }
+                            else
+                            {
+                                cell.Value = textoCelda.Replace(subPlaceholder, valorRaw);
+                                cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                                cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                            }
+                        }
                     }
                 }
             }
-            else
+        }
+    }
+
+    private static void InyectarFirmaEnCelda(IXLWorksheet ws, IXLCell targetCell, string base64)
+    {
+        if (string.IsNullOrWhiteSpace(base64)) return;
+        try
+        {
+            // Limpieza robusta de Base64: quitar encabezados y espacios/saltos de línea
+            string cleanBase64 = base64;
+            if (cleanBase64.Contains(","))
             {
-                string valor = item.ValueKind == JsonValueKind.Null ? "" : item.ToString();
-                foreach (var cell in ws.Row(filaActual).CellsUsed())
-                {
-                    var texto = cell.GetString();
-                    if (texto.Contains(placeholder))
-                        cell.Value = texto.Replace(placeholder, valor);
-                }
+                cleanBase64 = cleanBase64.Split(',')[1];
             }
+            cleanBase64 = cleanBase64.Trim().Replace("\n", "").Replace("\r", "");
+
+            byte[] imageBytes = Convert.FromBase64String(cleanBase64);
+            using var ms = new MemoryStream(imageBytes);
+            
+            targetCell.Value = string.Empty;
+
+            var picture = ws.AddPicture(ms)
+              .MoveTo(targetCell)
+              .WithSize(100, 40);
+            
+            picture.PaddingValues.Left = 5;
+            picture.PaddingValues.Top = 5;
+        }
+        catch (Exception ex)
+        { 
+            targetCell.Value = "Error Firma: " + ex.Message.Substring(0, Math.Min(20, ex.Message.Length)); 
         }
     }
 
     private static void InyectarFirmaBase64(IXLWorksheet ws, string placeholder, string base64)
     {
         if (string.IsNullOrWhiteSpace(base64)) return;
-
-        var base64Data = base64.Contains(",") ? base64.Split(',')[1] : base64;
-
-        IXLCell? targetCell = null;
-        foreach (var cell in ws.CellsUsed())
+        IXLCell? targetCell = ws.CellsUsed().FirstOrDefault(c => c.GetString().Contains(placeholder));
+        if (targetCell != null)
         {
-            if (cell.GetString().Contains(placeholder))
-            {
-                targetCell = cell;
-                break;
-            }
-        }
-
-        if (targetCell == null) return;
-
-        try
-        {
-            byte[] imageBytes = Convert.FromBase64String(base64Data);
-            using var ms = new MemoryStream(imageBytes);
-
-            int row = targetCell.Address.RowNumber;
-            int col = targetCell.Address.ColumnNumber;
-
-            targetCell.Value = string.Empty;
-
-            ws.AddPicture(ms)
-              .MoveTo(ws.Cell(row, col))
-              .WithSize(150, 60);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[ExcelService] Error al inyectar firma: {ex.Message}");
-            targetCell.Value = string.Empty;
+            InyectarFirmaEnCelda(ws, targetCell, base64);
         }
     }
 
-    /// <summary>
-    /// Limpiador de etiquetas (Regex Cleaner):
-    /// Elimina cualquier placeholder {{...}} sobrante antes de exportar.
-    /// </summary>
     private static void LimpiarPlaceholders(IXLWorksheet ws)
     {
         var regex = new Regex(@"\{\{.*?\}\}");
