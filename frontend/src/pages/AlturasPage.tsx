@@ -276,7 +276,7 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
   );
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px', fontFamily: 'system-ui, sans-serif', color: '#333' }}>
+    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px', fontFamily: 'system-ui, sans-serif', color: '#333' }}>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #e5e7eb', paddingBottom: '15px' }}>
         <h1 style={{ margin: 0, fontSize: '24px', color: '#1f2937' }}>Permiso de Trabajo en Alturas</h1>
@@ -387,16 +387,16 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
             <div key={eq} style={{ marginBottom: '15px', padding: '10px', background: '#f9fafb', borderRadius: '6px' }}>
               <RadioGroup label={`¿Usa ${eq.replace(/_/g, ' ')}?`} name={eq} value={formData[eq]} onChange={handleChange} />
               <div style={styles.grid2}>
-                <div style={styles.inputGroup}><label>Estado:</label> <input type="text" name={`est_${eq}`} value={formData[`est_${eq}`]} onChange={handleChange} style={styles.input} /></div>
-                <div style={styles.inputGroup}><label>Observaciones:</label> <input type="text" name={`obs_${eq}`} value={formData[`obs_${eq}`]} onChange={handleChange} style={styles.input} /></div>
+                <div style={styles.inputGroup}><label>Estado:</label> <select name={`est_${eq}`} value={formData[`est_${eq}`]} onChange={handleChange} style={styles.input}><option value="">Seleccionar...</option><option value="Bueno">Bueno</option><option value="Regular">Regular</option><option value="Malo">Malo</option></select></div>
+                <div style={styles.inputGroup}><label>Observaciones:</label> <textarea name={`obs_${eq}`} value={formData[`obs_${eq}`]} onChange={handleChange} style={{...styles.textarea, minHeight: '60px'}} placeholder="Describe el estado o cualquier observación..."></textarea></div>
               </div>
             </div>
           ))}
           <div style={{ padding: '10px', background: '#f9fafb', borderRadius: '6px' }}>
             <div style={styles.inputGroup}><label>Otros Equipos:</label> <input type="text" name="otros_equipos" value={formData.otros_equipos} onChange={handleChange} style={styles.input} /></div>
             <div style={styles.grid2}>
-              <div style={styles.inputGroup}><label>Estado:</label> <input type="text" name="estado_otros_equipos" value={formData.estado_otros_equipos} onChange={handleChange} style={styles.input} /></div>
-              <div style={styles.inputGroup}><label>Observaciones:</label> <input type="text" name="obs_otros_equipos" value={formData.obs_otros_equipos} onChange={handleChange} style={styles.input} /></div>
+              <div style={styles.inputGroup}><label>Estado:</label> <select name="estado_otros_equipos" value={formData.estado_otros_equipos} onChange={handleChange} style={styles.input}><option value="">Seleccionar...</option><option value="Bueno">Bueno</option><option value="Regular">Regular</option><option value="Malo">Malo</option></select></div>
+              <div style={styles.inputGroup}><label>Observaciones:</label> <textarea name="obs_otros_equipos" value={formData.obs_otros_equipos} onChange={handleChange} style={{...styles.textarea, minHeight: '60px'}} placeholder="Describe el estado o cualquier observación..."></textarea></div>
             </div>
           </div>
         </SeccionDesplegable>
