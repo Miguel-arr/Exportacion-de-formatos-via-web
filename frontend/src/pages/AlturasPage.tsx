@@ -264,7 +264,7 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
 
   const RadioGroup = ({ label, name, value, onChange, options = ['SI', 'NO', 'N/A'] }: { label: string, name: string, value: string, onChange: any, options?: string[] }) => (
     <div style={styles.radioRow}>
-      <span style={{ flex: 1, fontWeight: '500', fontSize: '13px' }}>{label}</span>
+      <span style={{ flex: 1, fontWeight: '700', fontSize: '14px', color: '#1f2937' }}>{label}</span>
       <div style={{ display: 'flex', gap: '10px' }}>
         {options.map(opt => (
           <label key={opt} style={{ ...styles.checkLabel, fontSize: '12px' }}>
@@ -276,7 +276,7 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
   );
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px', fontFamily: 'system-ui, sans-serif', color: '#333' }}>
+    <div style={{ maxWidth: '1500px', margin: '0 auto', padding: '20px', fontFamily: 'system-ui, sans-serif', color: '#333' }}>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #e5e7eb', paddingBottom: '15px' }}>
         <h1 style={{ margin: 0, fontSize: '24px', color: '#1f2937' }}>Permiso de Trabajo en Alturas</h1>
@@ -490,15 +490,15 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
 const styles = {
   card: { background: '#fff', borderRadius: '8px', border: '1px solid #e5e7eb', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
   cardHeader: { background: '#f8fafc', padding: '15px 20px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' },
-  cardBody: { padding: '20px' },
-  grid3: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' },
-  grid2: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' },
-  inputGroup: { display: 'flex', flexDirection: 'column' as const, gap: '5px' },
-  input: { padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', width: '100%', boxSizing: 'border-box' as const },
-  textarea: { padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', width: '100%', boxSizing: 'border-box' as const },
-  checkLabel: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' },
-  radioRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f1f5f9' },
-  subTitle: { margin: '10px 0', color: '#475569', fontSize: '15px', fontWeight: '600' },
+  cardBody: { padding: '24px' },
+  grid3: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' },
+  grid2: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' },
+  inputGroup: { display: 'flex', flexDirection: 'column' as const, gap: '7px' },
+  input: { padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', width: '100%', boxSizing: 'border-box' as const },
+  textarea: { padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', width: '100%', boxSizing: 'border-box' as const },
+  checkLabel: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#475569' },
+  radioRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '13px 0', borderBottom: '1px solid #f1f5f9' },
+  subTitle: { margin: '18px 0 14px 0', color: '#1f2937', fontSize: '16px', fontWeight: '700' },
   hr: { border: 'none', borderTop: '1px solid #e5e7eb', margin: '20px 0' },
   firmaBox: { padding: '15px', border: '1px dashed #cbd5e1', borderRadius: '8px', background: '#fcfcfc' },
   btnSecundario: { padding: '8px 16px', background: '#f1f5f9', border: 'none', borderRadius: '6px', cursor: 'pointer' },
