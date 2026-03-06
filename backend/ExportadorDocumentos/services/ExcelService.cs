@@ -177,9 +177,6 @@ public class ExcelService
             var picture = ws.AddPicture(ms)
               .MoveTo(targetCell)
               .WithSize(100, 40);
-            
-            picture.PaddingValues.Left = 5;
-            picture.PaddingValues.Top = 5;
         }
         catch (Exception ex)
         { 

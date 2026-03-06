@@ -364,7 +364,7 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
             <RadioGroup label="¿Plan de rescate?" name="chk_rescate" value={formData.chk_rescate} onChange={handleChange} />
             <RadioGroup label="¿Coordinador presente?" name="chk_coordinador" value={formData.chk_coordinador} onChange={handleChange} />
             <RadioGroup label="¿Clima favorable?" name="chk_clima" value={formData.chk_clima} onChange={handleChange} />
-            <RadioGroup label="¿Izaje de cargas?" name="chkizar" value={formData.chk_izar} onChange={handleChange} />
+            <RadioGroup label="¿Izaje de cargas?" name="chk_izaje" value={formData.chk_izaje} onChange={handleChange} />
             <RadioGroup label="¿Portaherramientas?" name="chk_portaherramienta" value={formData.chk_portaherramienta} onChange={handleChange} />
             <RadioGroup label="¿Riesgo eléctrico?" name="chk_electricidad" value={formData.chk_electricidad} onChange={handleChange} />
             <RadioGroup label="¿Verificación puntos anclaje?" name="chk_verificacion_puntos_anclajes" value={formData.chk_verificacion_puntos_anclajes} onChange={handleChange} />
