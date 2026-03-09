@@ -2,6 +2,8 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
+using ExportadorDocumentos.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,10 @@ builder.Services.AddControllers();
 // Registrar servicios de negocio
 builder.Services.AddScoped<ExcelService>();
 builder.Services.AddScoped<JwtService>();
+
+builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
 // CORS - Configuracion permisiva para desarrollo local
 builder.Services.AddCors(options =>
