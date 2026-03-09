@@ -6,7 +6,6 @@ import { generarDocumento, descargarBlob } from '../services/api';
 import type { GenerarDocumentoRequest } from '../types/api';
 
 interface AlturasPageProps {
-  displayName: string;
   onVolver: () => void;
   onSesionExpirada: () => void;
 }
@@ -37,7 +36,7 @@ const SeccionDesplegable = ({ titulo, children, defaultAbierto = false }: { titu
   );
 };
 
-export default function AlturasPage({ displayName, onVolver, onSesionExpirada }: AlturasPageProps) {
+export default function AlturasPage({ onVolver, onSesionExpirada }: AlturasPageProps) {
   const hoy = new Date().toISOString().split('T')[0];
 
   // ================= ESTADO CENTRALIZADO =================
@@ -279,7 +278,7 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
 
   const RadioGroup = ({ label, name, value, onChange, options = ['SI', 'NO', 'N/A'] }: { label: string, name: string, value: string, onChange: any, options?: string[] }) => (
     <div style={styles.radioRow}>
-      <span style={{ flex: 1, fontWeight: '500', fontSize: '13px' }}>{label}</span>
+      <span style={{ flex: 1, fontWeight: '700', fontSize: '14px', color: '#1f2937' }}>{label}</span>
       <div style={{ display: 'flex', gap: '10px' }}>
         {options.map(opt => (
           <label key={opt} style={{ ...styles.checkLabel, fontSize: '12px' }}>
@@ -297,7 +296,7 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
   );
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px', fontFamily: 'system-ui, sans-serif', color: '#333' }}>
+    <div style={{ maxWidth: '1500px', margin: '0 auto', padding: '20px', fontFamily: 'system-ui, sans-serif', color: '#333' }}>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #e5e7eb', paddingBottom: '15px' }}>
         <h1 style={{ margin: 0, fontSize: '24px', color: '#1f2937' }}>Permiso de Trabajo en Alturas</h1>
@@ -338,13 +337,13 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
           <hr style={styles.hr} />
           <h4 style={styles.subTitle}>Tipo de Trabajo</h4>
           <div style={styles.grid3}>
-            <label style={styles.checkLabel}><input type="checkbox" name="chk_mantenimiento" checked={formData.chk_mantenimiento} onChange={handleChange} /> Mantenimiento</label>
+            <label style={styles.checkLabel}><input type="checkbox" name="chk_mantenimiento" checked={formData.chk_mantenimiento} onChange={handleChange} /> Mantenimiento y/o reparación</label>
             <label style={styles.checkLabel}><input type="checkbox" name="chk_almacenamiento" checked={formData.chk_almacenamiento} onChange={handleChange} /> Almacenamiento</label>
-            <label style={styles.checkLabel}><input type="checkbox" name="chk_instalacion" checked={formData.chk_instalacion} onChange={handleChange} /> Instalación</label>
-            <label style={styles.checkLabel}><input type="checkbox" name="chk_supervicion" checked={formData.chk_supervicion} onChange={handleChange} /> Supervisión</label>
+            <label style={styles.checkLabel}><input type="checkbox" name="chk_instalacion" checked={formData.chk_instalacion} onChange={handleChange} /> Instalación y/o desintalación</label>
+            <label style={styles.checkLabel}><input type="checkbox" name="chk_supervicion" checked={formData.chk_supervicion} onChange={handleChange} /> Supervisión de actividades</label>
             <label style={styles.checkLabel}><input type="checkbox" name="chk_orden" checked={formData.chk_orden} onChange={handleChange} /> Orden y aseo</label>
             <label style={styles.checkLabel}><input type="checkbox" name="chk_izaje" checked={formData.chk_izaje} onChange={handleChange} /> Izaje de carga</label>
-            <label style={styles.checkLabel}><input type="checkbox" name="chk_arme" checked={formData.chk_arme} onChange={handleChange} /> Arme/Desarme</label>
+            <label style={styles.checkLabel}><input type="checkbox" name="chk_arme" checked={formData.chk_arme} onChange={handleChange} /> Arme y desarme de sistemas de acceso</label>
             <div style={styles.inputGroup}><label>Otros:</label> <input type="text" name="otros_trabajos" value={formData.otros_trabajos} onChange={handleChange} style={styles.input} /></div>
           </div>
 
@@ -362,17 +361,17 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
               </div>
               
               <div style={styles.grid3}>
-                <input type="text" placeholder="Nombres y Apellidos" value={ejec.nombres} onChange={(e) => handleEjecutorChange(index, 'nombres', e.target.value)} style={styles.input} required />
+                <input type="text" placeholder="Nombres y Apellidos (Ejecutor)" value={ejec.nombres} onChange={(e) => handleEjecutorChange(index, 'nombres', e.target.value)} style={styles.input} required />
                 <input type="text" placeholder="Documento (C.C/C.E/P.E.P)" value={ejec.doc} onChange={(e) => handleEjecutorChange(index, 'doc', e.target.value)} style={styles.input} required />
                 <input type="text" placeholder="Cargo/Rol" value={ejec.cargo} onChange={(e) => handleEjecutorChange(index, 'cargo', e.target.value)} style={styles.input} required />
               </div>
               
               <div style={{ marginTop: '15px' }}>
-                <RadioGroup label="¿Examen médico vigente?" name={`ejec_examen_${index}`} value={ejec.examen} onChange={(e: any) => handleEjecutorChange(index, 'examen', e.target.value)} />
-                <RadioGroup label="¿Certificado alturas vigente?" name={`ejec_cert_${index}`} value={ejec.certificado} onChange={(e: any) => handleEjecutorChange(index, 'certificado', e.target.value)} />
-                <RadioGroup label="¿Seguridad social vigente?" name={`ejec_ss_${index}`} value={ejec.ss} onChange={(e: any) => handleEjecutorChange(index, 'ss', e.target.value)} />
-                <RadioGroup label="¿Verifica sus anclajes?" name={`ejec_anc_${index}`} value={ejec.anclajes} onChange={(e: any) => handleEjecutorChange(index, 'anclajes', e.target.value)} />
-                <RadioGroup label="¿Consumió alcohol (24h)?" name={`ejec_alc_${index}`} value={ejec.alcohol} onChange={(e: any) => handleEjecutorChange(index, 'alcohol', e.target.value)} />
+                <RadioGroup label="¿El trabajador cuenta con éxamen médico para trabajo en alturas?" name={`ejec_examen_${index}`} value={ejec.examen} onChange={(e: any) => handleEjecutorChange(index, 'examen', e.target.value)} />
+                <RadioGroup label="¿El trabajador cuenta con certificado para trabajo en alturas?" name={`ejec_cert_${index}`} value={ejec.certificado} onChange={(e: any) => handleEjecutorChange(index, 'certificado', e.target.value)} />
+                <RadioGroup label="¿El trabajador cuenta con la seguridad social vigente?" name={`ejec_ss_${index}`} value={ejec.ss} onChange={(e: any) => handleEjecutorChange(index, 'ss', e.target.value)} />
+                <RadioGroup label="Se ha verificado los puntos de anclaje." name={`ejec_anc_${index}`} value={ejec.anclajes} onChange={(e: any) => handleEjecutorChange(index, 'anclajes', e.target.value)} />
+                <RadioGroup label="¿El trabajador ha consumido alcohol en las últimas 24 horas?" name={`ejec_alc_${index}`} value={ejec.alcohol} onChange={(e: any) => handleEjecutorChange(index, 'alcohol', e.target.value)} />
               </div>
             
               <div style={{ marginTop: '15px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
@@ -398,34 +397,34 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
         </SeccionDesplegable>
 
         <SeccionDesplegable titulo="2. Permisos Adicionales">
-          <RadioGroup label="¿Permiso en caliente?" name="permiso_caliente" value={formData.permiso_caliente} onChange={handleChange} />
-          <RadioGroup label="¿Permiso espacios confinados?" name="permiso_confinados" value={formData.permiso_confinados} onChange={handleChange} />
-          <RadioGroup label="¿Permiso riesgo eléctrico?" name="permiso_electrico" value={formData.permiso_electrico} onChange={handleChange} />
+          <RadioGroup label="Permiso de Trabajo en Caliente" name="permiso_caliente" value={formData.permiso_caliente} onChange={handleChange} />
+          <RadioGroup label="Permiso de Trabajo en Espacios confinados" name="permiso_confinados" value={formData.permiso_confinados} onChange={handleChange} />
+          <RadioGroup label="Permiso de Trabajo Eléctrico" name="permiso_electrico" value={formData.permiso_electrico} onChange={handleChange} />
         </SeccionDesplegable>
 
         <SeccionDesplegable titulo="3. Verificación de Peligros y Riesgos">
           <div style={styles.grid2}>
-            <RadioGroup label="¿ATS socializado?" name="chk_ats" value={formData.chk_ats} onChange={handleChange} />
-            <RadioGroup label="¿Socialización de procedimientos?" name="chk_socializacion" value={formData.chk_socializacion} onChange={handleChange} />
-            <RadioGroup label="¿Condiciones óptimas?" name="chk_optimas" value={formData.chk_optimas} onChange={handleChange} />
-            <RadioGroup label="¿Área delimitada?" name="chk_delimitado" value={formData.chk_delimitado} onChange={handleChange} />
-            <RadioGroup label="¿Plan de rescate?" name="chk_rescate" value={formData.chk_rescate} onChange={handleChange} />
-            <RadioGroup label="¿Coordinador presente?" name="chk_coordinador" value={formData.chk_coordinador} onChange={handleChange} />
-            <RadioGroup label="¿Clima favorable?" name="chk_clima" value={formData.chk_clima} onChange={handleChange} />
-            <RadioGroup label="¿Izaje de cargas?" name="chkizar" value={formData.chk_izar} onChange={handleChange} />
-            <RadioGroup label="¿Portaherramientas?" name="chk_portaherramienta" value={formData.chk_portaherramienta} onChange={handleChange} />
-            <RadioGroup label="¿Riesgo eléctrico?" name="chk_electricidad" value={formData.chk_electricidad} onChange={handleChange} />
+            <RadioGroup label="¿Se realizó el análisis de trabajo seguro, (ATS) u otra metodología de identificación de peligros de la actividad?" name="chk_ats" value={formData.chk_ats} onChange={handleChange} />
+            <RadioGroup label="¿Se socializaron los peligros, riesgos y medidas de control a todos los trabajadores autorizados para ejecutar la tarea?" name="chk_socializacion" value={formData.chk_socializacion} onChange={handleChange} />
+            <RadioGroup label="¿El personal se encuentra en óptimas condiciones para ejecutar la actividad?" name="chk_optimas" value={formData.chk_optimas} onChange={handleChange} />
+            <RadioGroup label="¿El sitio de trabajo está delimitado y señalizado?" name="chk_delimitado" value={formData.chk_delimitado} onChange={handleChange} />
+            <RadioGroup label="¿Se cuenta con plan de rescate para la actividad?" name="chk_rescate" value={formData.chk_rescate} onChange={handleChange} />
+            <RadioGroup label="¿El trabajo será supervisado por el coordinador de trabajo en alturas?" name="chk_coordinador" value={formData.chk_coordinador} onChange={handleChange} />
+            <RadioGroup label="¿Se evidencia la existencia o amenaza de fuertes vientos, lluvias torrenciales u otros fenómenos climáticos?" name="chk_clima" value={formData.chk_clima} onChange={handleChange} />
+            <RadioGroup label="¿Se ha dispuesto de los elementos necesarios para izar y descender la herramienta?" name="chk_izar" value={formData.chk_izar} onChange={handleChange} />
+            <RadioGroup label="¿Se cuenta con portaherramienta para la actividad?" name="chk_portaherramienta" value={formData.chk_portaherramienta} onChange={handleChange} />
+            <RadioGroup label="¿Se han tomado las medidas de control para la ejecución del trabajo cerca de lineas o equipos electricos energizados?" name="chk_electricidad" value={formData.chk_electricidad} onChange={handleChange} />
             <RadioGroup label="¿Verificación puntos anclaje?" name="chk_verificacion_puntos_anclajes" value={formData.chk_verificacion_puntos_anclajes} onChange={handleChange} />
           </div>
         </SeccionDesplegable>
 
         <SeccionDesplegable titulo="4. Elementos de Protección Personal (EPP)">
           <div style={styles.grid2}>
-            <RadioGroup label="Casco" name="epp_casco" value={formData.epp_casco} onChange={handleChange} />
-            <RadioGroup label="Gafas" name="epp_gafas" value={formData.epp_gafas} onChange={handleChange} />
-            <RadioGroup label="Dotación" name="epp_dotacion" value={formData.epp_dotacion} onChange={handleChange} />
-            <RadioGroup label="Guantes" name="epp_guantes" value={formData.epp_guantes} onChange={handleChange} />
-            <RadioGroup label="Calzado" name="epp_calzado" value={formData.epp_calzado} onChange={handleChange} />
+            <RadioGroup label="CASCO CON BARBUQUEJO CON 3 O 4 PUNTOS." name="epp_casco" value={formData.epp_casco} onChange={handleChange} />
+            <RadioGroup label="GAFAS ANTIEMPAÑANTES." name="epp_gafas" value={formData.epp_gafas} onChange={handleChange} />
+            <RadioGroup label="DOTACIÓN DE TRABAJO." name="epp_dotacion" value={formData.epp_dotacion} onChange={handleChange} />
+            <RadioGroup label="GUANTES ACORDES A LA LABOR." name="epp_guantes" value={formData.epp_guantes} onChange={handleChange} />
+            <RadioGroup label="CALZADO DE SEGURIDAD." name="epp_calzado" value={formData.epp_calzado} onChange={handleChange} />
           </div>
           <div style={{ ...styles.inputGroup, marginTop: '10px' }}><label>Otros EPP:</label> <input type="text" name="otros_elementos" value={formData.otros_elementos} onChange={handleChange} style={styles.input} /></div>
           
@@ -446,16 +445,16 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
             <div key={eq} style={{ marginBottom: '15px', padding: '10px', background: '#f9fafb', borderRadius: '6px' }}>
               <RadioGroup label={`¿Usa ${eq.replace(/_/g, ' ')}?`} name={eq} value={formData[eq]} onChange={handleChange} />
               <div style={styles.grid2}>
-                <div style={styles.inputGroup}><label>Estado:</label> <input type="text" name={`est_${eq}`} value={formData[`est_${eq}`]} onChange={handleChange} style={styles.input} /></div>
-                <div style={styles.inputGroup}><label>Observaciones:</label> <input type="text" name={`obs_${eq}`} value={formData[`obs_${eq}`]} onChange={handleChange} style={styles.input} /></div>
+                <div style={styles.inputGroup}><label>Estado:</label> <select name={`est_${eq}`} value={formData[`est_${eq}`]} onChange={handleChange} style={styles.input}><option value="">Seleccionar...</option><option value="Bueno">Bueno</option><option value="Regular">Regular</option><option value="Malo">Malo</option></select></div>
+                <div style={styles.inputGroup}><label>Observaciones:</label> <textarea name={`obs_${eq}`} value={formData[`obs_${eq}`]} onChange={handleChange} style={{...styles.textarea, minHeight: '60px'}} placeholder="Describe el estado o cualquier observación..."></textarea></div>
               </div>
             </div>
           ))}
           <div style={{ padding: '10px', background: '#f9fafb', borderRadius: '6px' }}>
             <div style={styles.inputGroup}><label>Otros Equipos:</label> <input type="text" name="otros_equipos" value={formData.otros_equipos} onChange={handleChange} style={styles.input} /></div>
             <div style={styles.grid2}>
-              <div style={styles.inputGroup}><label>Estado:</label> <input type="text" name="estado_otros_equipos" value={formData.estado_otros_equipos} onChange={handleChange} style={styles.input} /></div>
-              <div style={styles.inputGroup}><label>Observaciones:</label> <input type="text" name="obs_otros_equipos" value={formData.obs_otros_equipos} onChange={handleChange} style={styles.input} /></div>
+              <div style={styles.inputGroup}><label>Estado:</label> <select name="estado_otros_equipos" value={formData.estado_otros_equipos} onChange={handleChange} style={styles.input}><option value="">Seleccionar...</option><option value="Bueno">Bueno</option><option value="Regular">Regular</option><option value="Malo">Malo</option></select></div>
+              <div style={styles.inputGroup}><label>Observaciones:</label> <textarea name="obs_otros_equipos" value={formData.obs_otros_equipos} onChange={handleChange} style={{...styles.textarea, minHeight: '60px'}} placeholder="Describe el estado o cualquier observación..."></textarea></div>
             </div>
           </div>
         </SeccionDesplegable>
