@@ -31,6 +31,7 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
     chk_izaje: false,
     chk_arme: false,
     otros_trabajos: '',
+    descripcion_trabajo: '',
     ejecutores: [{ nombres: '', doc: '', cargo: '', examen: '', certificado: '', ss: '', anclajes: '', alcohol: '' }],
     permiso_caliente: '',
     permiso_confinados: '',
@@ -63,6 +64,7 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
     lvv_temporal: '', est_lvv_temporal: '', obs_lvv_temporal: '',
     eslinga_restriccion: '', est_eslinga_restriccion: '', obs_eslinga_restriccion: '',
     otros_equipos: '', estado_otros_equipos: '', obs_otros_equipos: '',
+    sistema_utilizar: '', restriccion: '', posicionamiento: '', detencion: '',
     delimitacion_area: '', obs_delimitacion_area: '',
     barandas: '', obs_barandas: '',
     control_acceso: '', obs_control_acceso: '',
@@ -97,33 +99,22 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
     observaciones_finales: '',
   };
 
-  const { formData, loading, alerta, setAlerta, handleChange, handleSubmit, firmaResponsableRef, firmaCoordinadorRef, firmaEmergenciaRef, firmaCierreRef, firmasEjecutoresRefs } = useFormEngine({
+  const { formData, loading, alerta, setAlerta, handleChange, handleEjecutorChange, agregarEjecutor, eliminarEjecutor, handleSubmit, firmaResponsableRef, firmaCoordinadorRef, firmaEmergenciaRef, firmaCierreRef, firmasEjecutoresRefs } = useFormEngine({
     initialData,
     onSesionExpirada
   });
-
-  const handleEjecutorChange = (index: number, campo: keyof Ejecutor, valor: string) => {
-    const nuevosEjecutores = [...formData.ejecutores];
-    nuevosEjecutores[index][campo] = valor;
-    formData.ejecutores = nuevosEjecutores;
-  };
-
-  const agregarEjecutor = () => {
-    formData.ejecutores = [...formData.ejecutores, { nombres: '', doc: '', cargo: '', examen: '', certificado: '', ss: '', anclajes: '', alcohol: '' }];
-  };
-
-  const eliminarEjecutor = (index: number) => {
-    formData.ejecutores = formData.ejecutores.filter((_: any, i: number) => i !== index);
-  };
 
   const procesarDatos = (datos: any, refs: any) => {
     ['mantenimiento', 'almacenamiento', 'instalacion', 'supervicion', 'orden', 'izaje', 'arme'].forEach(chk => {
       datos[`chk_${chk}`] = formData[`chk_${chk}`] ? 'X' : '';
     });
-
     datos['ubicación_trabajo'] = formData.ubicacion_trabajo;
     delete datos.ubicacion_trabajo;
-
+    datos['descripcion_trabajo'] = formData.descripcion_trabajo;
+    datos['{{sistema_utilizar}}'] = formData.sistema_utilizar;
+    datos['{{restriccion}}'] = formData.restriccion;
+    datos['{{posicionamiento}}'] = formData.posicionamiento;
+    datos['{{detencion}}'] = formData.detencion;
     datos.ejecutores = formData.ejecutores.map((ejec: Ejecutor, index: number) => {
       const firmaBase64 = refs.firmasEjecutoresRefs.current[index]?.getFirmaBase64();
       return {
@@ -204,6 +195,9 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
           </div>
 
           <hr style={formStyles.hr} />
+          <div style={formStyles.inputGroup}><label style={{ fontWeight: '600', color: '#374151' }}>Descripción del Trabajo:</label> <textarea name="descripcion_trabajo" value={formData.descripcion_trabajo} onChange={handleChange} style={{...formStyles.textarea, minHeight: '100px'}} placeholder="Describe el trabajo a realizar..." required></textarea></div>
+
+          <hr style={formStyles.hr} />
           <EjecutoresSection
             ejecutores={formData.ejecutores}
             onEjecutorChange={handleEjecutorChange}
@@ -263,6 +257,17 @@ export default function AlturasPage({ displayName, onVolver, onSesionExpirada }:
               <div style={formStyles.inputGroup}><label>Estado:</label> <select name="estado_otros_equipos" value={formData.estado_otros_equipos} onChange={handleChange} style={formStyles.input}><option value="">Seleccionar...</option><option value="Bueno">Bueno</option><option value="Regular">Regular</option><option value="Malo">Malo</option></select></div>
               <div style={formStyles.inputGroup}><label style={{ fontWeight: '600', color: '#374151' }}>Observaciones:</label> <textarea name="obs_otros_equipos" value={formData.obs_otros_equipos} onChange={handleChange} style={{...formStyles.textarea, minHeight: '70px'}} placeholder="Describe el estado o cualquier observación..."></textarea></div>
             </div>
+          </div>
+
+          <hr style={formStyles.hr} />
+          <h4 style={formStyles.subTitle}>Sistema a Utilizar</h4>
+          <div style={formStyles.grid2}>
+            <div style={formStyles.inputGroup}><label>Sistema a Utilizar:</label> <input type="text" name="sistema_utilizar" value={formData.sistema_utilizar} onChange={handleChange} style={formStyles.input} placeholder="Especifica el sistema" /></div>
+            <RadioGroup label="Restriccion" name="restriccion" value={formData.restriccion} onChange={handleChange} options={['SI', 'NO']} styles={formStyles} />
+          </div>
+          <div style={formStyles.grid2}>
+            <RadioGroup label="Posicionamiento" name="posicionamiento" value={formData.posicionamiento} onChange={handleChange} options={['SI', 'NO']} styles={formStyles} />
+            <RadioGroup label="Detencion de Caidas" name="detencion" value={formData.detencion} onChange={handleChange} options={['SI', 'NO']} styles={formStyles} />
           </div>
         </CollapsibleSection>
 

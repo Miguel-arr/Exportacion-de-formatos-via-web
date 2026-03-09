@@ -15,6 +15,9 @@ interface UseFormEngineReturn {
   alerta: { tipo: 'error' | 'success'; mensaje: string } | null;
   setAlerta: (alerta: any) => void;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  handleEjecutorChange: (index: number, campo: string, valor: string) => void;
+  agregarEjecutor: () => void;
+  eliminarEjecutor: (index: number) => void;
   handleSubmit: (e: React.FormEvent, config: SubmitConfig) => Promise<void>;
   firmaResponsableRef: React.MutableRefObject<SignaturePadHandle | null>;
   firmaCoordinadorRef: React.MutableRefObject<SignaturePadHandle | null>;
@@ -46,6 +49,28 @@ export function useFormEngine({ initialData, onSesionExpirada }: UseFormEnginePr
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+    }));
+  };
+
+  const handleEjecutorChange = (index: number, campo: string, valor: string) => {
+    setFormData(prev => {
+      const nuevosEjecutores = [...prev.ejecutores];
+      nuevosEjecutores[index] = { ...nuevosEjecutores[index], [campo]: valor };
+      return { ...prev, ejecutores: nuevosEjecutores };
+    });
+  };
+
+  const agregarEjecutor = () => {
+    setFormData(prev => ({
+      ...prev,
+      ejecutores: [...prev.ejecutores, { nombres: '', doc: '', cargo: '', examen: '', certificado: '', ss: '', anclajes: '', alcohol: '' }]
+    }));
+  };
+
+  const eliminarEjecutor = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      ejecutores: prev.ejecutores.filter((_: any, i: number) => i !== index)
     }));
   };
 
@@ -95,6 +120,9 @@ export function useFormEngine({ initialData, onSesionExpirada }: UseFormEnginePr
     alerta,
     setAlerta,
     handleChange,
+    handleEjecutorChange,
+    agregarEjecutor,
+    eliminarEjecutor,
     handleSubmit,
     firmaResponsableRef,
     firmaCoordinadorRef,
