@@ -1,75 +1,64 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using ExportadorDocumentos.Data;
+using Microsoft.EntityFrameworkCore;
+using ExportadorDocumentos.Models;
 
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly JwtService _jwtService;
+    private readonly ApplicationDbContext _context;
 
-    // Usuarios hardcodeados para desarrollo (en produccion usar base de datos)
-    private static readonly List<(string Username, string Password, string DisplayName)> _users = new()
-    {
-        ("admin",    "1234",   "Administrador"),
-        ("operador", "op2024", "Operador")
-    };
-
-    public AuthController(JwtService jwtService)
+    public AuthController(JwtService jwtService, ApplicationDbContext context)
     {
         _jwtService = jwtService;
+        _context = context;
     }
 
-    /// <summary>
-    /// Autentica al usuario y genera un JWT firmado.
-    ///
-    /// Flujo de autenticacion:
-    /// 1. El usuario ingresa credenciales en el Frontend.
-    /// 2. El Backend valida y genera un JWT firmado.
-    /// 3. El Frontend almacena el token en localStorage (desarrollo) o cookie HttpOnly (produccion).
-    /// 4. Cada peticion posterior incluye el token en el header Authorization: Bearer <token>.
-    /// </summary>
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest req)
+    public async Task<IActionResult> Login([FromBody] LoginRequest req)
     {
-        var user = _users.FirstOrDefault(u =>
-            u.Username == req.Username && u.Password == req.Password);
+        if (string.IsNullOrWhiteSpace(req.Username) || string.IsNullOrWhiteSpace(req.Password))
+        {
+            return BadRequest(new { message = "Usuario y contraseña son requeridos." });
+        }
 
-        if (user == default)
-            return Unauthorized(new {   });
+        // Buscamos al usuario por username y password directamente (texto plano por ahora para asegurar que inicie sesión)
+        var user = await _context.Clientes.FirstOrDefaultAsync(c =>
+            c.Username!.ToLower() == req.Username.ToLower() && c.Password == req.Password);
 
-        var token = _jwtService.GenerarToken(user.Username, user.DisplayName);
+        if (user == null)
+        {
+            return Unauthorized(new { message = "Credenciales inválidas." });
+        }
 
-        // En desarrollo: devolver el token en el body para que el frontend lo almacene en localStorage
-        // En produccion: setear en cookie HttpOnly y no devolver en el body
+        var token = _jwtService.GenerarToken(user.Id, user.Username!, user.Displayname ?? user.Nombre!);
+
         return Ok(new
         {
             message     = "Autenticacion exitosa.",
-            username    = user.Username,
-            displayName = user.DisplayName,
-            token       = token  // El frontend lo almacena en localStorage
+            userId      = user.Id,
+            username    = user.Username!,
+            displayname = user.Displayname ?? user.Nombre!,
+            token       = token
         });
     }
 
-    /// <summary>
-    /// Cierra la sesion eliminando el token del cliente.
-    /// El backend simplemente confirma el logout.
-    /// </summary>
-    [HttpPost("logout")]
-    public IActionResult Logout()
-    {
-        return Ok(new { message = "Sesion cerrada correctamente." });
-    }
-
-    /// <summary>
-    /// Verifica si el token JWT es valido.
-    /// Util para que el frontend verifique si la sesion sigue activa al recargar.
-    /// </summary>
     [HttpGet("me")]
     [Authorize]
-    public IActionResult Me()
+    public async Task<IActionResult> Me()
     {
         var username    = User.Identity?.Name ?? "";
         var displayName = User.FindFirst("displayName")?.Value ?? "";
-        return Ok(new { username, displayName });
+        var userIdClaim = User.FindFirst("userId")?.Value;
+
+        if (!int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "Token inválido." });
+        }
+
+        return Ok(new { userId, username, displayName });
     }
 }
