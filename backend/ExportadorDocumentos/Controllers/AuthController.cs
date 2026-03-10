@@ -25,20 +25,21 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "Usuario y contraseña son requeridos." });
         }
 
-        // Buscamos al usuario por username y password directamente (texto plano por ahora para asegurar que inicie sesión)
+        // Buscamos al usuario comparando el username sin importar mayúsculas/minúsculas
+        // y comparando el password exactamente como está en tu BD (texto plano: 1234 o 123)
         var user = await _context.Clientes.FirstOrDefaultAsync(c =>
-            c.Username!.ToLower() == req.Username.ToLower() && c.Password == req.Password);
+            c.Username != null && c.Username.ToLower() == req.Username.ToLower() && c.Password == req.Password);
 
         if (user == null)
         {
-            return Unauthorized(new { message = "Credenciales inválidas." });
+            return Unauthorized(new { message = "Credenciales incorrectas. Verifica el usuario y la contraseña." });
         }
 
         var token = _jwtService.GenerarToken(user.Id, user.Username!, user.Displayname ?? user.Nombre!);
 
         return Ok(new
         {
-            message     = "Autenticacion exitosa.",
+            message     = "Autenticación exitosa.",
             userId      = user.Id,
             username    = user.Username!,
             displayname = user.Displayname ?? user.Nombre!,

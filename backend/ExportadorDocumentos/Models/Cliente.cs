@@ -4,31 +4,34 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExportadorDocumentos.Models
 {
+    [Table("clientes", Schema = "public")]
     public class Cliente
     {
         [Key]
+        [Column("id")]
         public int Id { get; set; }
 
-        [Required]
-        [StringLength(255)]
-        public string Nombre { get; set; }
+        [Column("nombre")]
+        [StringLength(150)]
+        public string? Nombre { get; set; }
 
-        [Required]
+        [Column("cc")]
         [StringLength(20)]
-        public string Cc { get; set; }
+        public string? Cc { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        public string Username { get; set; }
+        [Column("username")]
+        [StringLength(100)]
+        public string? Username { get; set; }
 
+        [Column("displayname")]
+        [StringLength(150)]
+        public string? Displayname { get; set; }
+
+        [Column("password")]
         [StringLength(255)]
-        public string Displayname { get; set; }
+        public string? Password { get; set; }
 
-        [Required]
-        [StringLength(255)]
-        public string Password { get; set; }
-
-        [Column(TypeName = "timestamp with time zone")]
+        [Column("created_at", TypeName = "timestamp without time zone")]
         public DateTime Created_at { get; set; }
     }
 }
